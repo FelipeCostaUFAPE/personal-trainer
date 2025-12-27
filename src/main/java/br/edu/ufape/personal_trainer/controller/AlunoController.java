@@ -43,8 +43,8 @@ public class AlunoController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/modalidades/{modalidade}")
-    public List<AlunoResponse> listarPorModalidade(@PathVariable String modalidade) {
+    @GetMapping("/modalidade")
+    public List<AlunoResponse> listarPorModalidade(@RequestParam String modalidade) {
         return alunoService.listarPorModalidade(modalidade).stream()
                 .map(AlunoResponse::new)
                 .toList();
@@ -57,8 +57,8 @@ public class AlunoController {
                 .toList();
     }
 
-    @GetMapping("/email/{email}")
-    public ResponseEntity<AlunoResponse> buscarEmail(@PathVariable String email) {
+    @GetMapping("/email")
+    public ResponseEntity<AlunoResponse> buscarEmail(@RequestParam String email) {
         Aluno aluno = alunoService.buscarEmail(email);
         return ResponseEntity.ok(new AlunoResponse(aluno));
     }

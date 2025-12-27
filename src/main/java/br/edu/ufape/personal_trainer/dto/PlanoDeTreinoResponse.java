@@ -10,25 +10,20 @@ public record PlanoDeTreinoResponse(
     Long id,
     Long alunoId,
     String nome,
-    Integer duracaoSemanas,
 
     @JsonFormat(pattern = "dd/MM/yyyy")
     LocalDate dataInicio,
 
     @JsonFormat(pattern = "dd/MM/yyyy")
-    LocalDate dataFim,
-
-    Boolean ativo
+    LocalDate dataFim
 ) {
     public PlanoDeTreinoResponse(PlanoDeTreino p) {
         this(
             p.getPlanoId(),
             p.getAluno().getUsuarioId(),
             p.getNome(),
-            p.getDuracaoSemanas(),
             p.getDataInicio(),
-            p.getDataFim(),
-            p.getAtivo()
+            p.getDataFim()
         );
     }
 }

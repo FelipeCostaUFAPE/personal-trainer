@@ -31,15 +31,17 @@ public class AvaliacaoFisicaController {
 	private AlunoService alunoService;
 	
 	@GetMapping
-	public List<AvaliacaoFisica> listarTodos(){
-		return avaliacaoFisicaService.listarTodos();
+	public List<AvaliacaoFisicaResponse> listarTodos() {
+	    return avaliacaoFisicaService.listarTodos().stream()
+	            .map(AvaliacaoFisicaResponse::new)
+	            .toList();
 	}
-	
+
 	@GetMapping("/{id}")
-    public ResponseEntity<AvaliacaoFisicaResponse> buscarId(@PathVariable Long id) {
-        AvaliacaoFisica av = avaliacaoFisicaService.buscarId(id);
-        return ResponseEntity.ok(new AvaliacaoFisicaResponse(av));
-    }
+	public ResponseEntity<AvaliacaoFisicaResponse> buscarId(@PathVariable Long id) {
+	    AvaliacaoFisica av = avaliacaoFisicaService.buscarId(id);
+	    return ResponseEntity.ok(new AvaliacaoFisicaResponse(av));
+	}
 
     @PostMapping
     public ResponseEntity<AvaliacaoFisicaResponse> salvar(@Valid @RequestBody AvaliacaoFisicaRequest request) {

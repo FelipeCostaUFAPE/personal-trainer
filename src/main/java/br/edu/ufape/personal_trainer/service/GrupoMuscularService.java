@@ -1,11 +1,14 @@
 package br.edu.ufape.personal_trainer.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.edu.ufape.personal_trainer.controller.advice.BusinessValidationException;
 import br.edu.ufape.personal_trainer.model.GrupoMuscular;
 import br.edu.ufape.personal_trainer.repository.GrupoMuscularRepository;
 
@@ -30,14 +33,21 @@ public class GrupoMuscularService {
 	// salvar
 	@Transactional
 	public GrupoMuscular salvar(GrupoMuscular grupoMuscular) {
-		if(grupoMuscular.getNome() == null || grupoMuscular.getNome().trim().isEmpty()) {
-			throw new IllegalArgumentException("Um grupo muscular deve ter um nome");
-		}
-		
-		if(grupoMuscularRepository.findByNome(grupoMuscular.getNome()).isPresent()) {
-			throw new IllegalArgumentException("Já existe grupo muscular com nome: " + grupoMuscular.getNome());
-		}
-		return grupoMuscularRepository.save(grupoMuscular);
+	    if (grupoMuscular.getNome() == null || grupoMuscular.getNome().trim().isEmpty()) {
+	        throw new IllegalArgumentException("Um grupo muscular deve ter um nome");
+	    }
+
+	    Map<String, String> erros = new HashMap<>();
+	    
+	    if (grupoMuscularRepository.findByNome(grupoMuscular.getNome()).isPresent()) {
+	        erros.put("nome", "Nome do grupo muscular já existe");
+	    }
+	    
+	    if (!erros.isEmpty()) {
+	        throw new BusinessValidationException(erros);
+	    }
+
+	    return grupoMuscularRepository.save(grupoMuscular);
 	}
 	
 	// deletar

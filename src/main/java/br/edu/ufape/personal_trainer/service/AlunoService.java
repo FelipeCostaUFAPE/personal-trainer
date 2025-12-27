@@ -1,11 +1,14 @@
 package br.edu.ufape.personal_trainer.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.edu.ufape.personal_trainer.controller.advice.BusinessValidationException;
 import br.edu.ufape.personal_trainer.dto.AlunoRequest;
 import br.edu.ufape.personal_trainer.model.Aluno;
 import br.edu.ufape.personal_trainer.model.Personal;
@@ -36,16 +39,26 @@ public class AlunoService {
 	// criar dto
 	@Transactional
 	public Aluno criar(AlunoRequest request) {
-        Aluno aluno = new Aluno();
-        aluno.setNome(request.nome());
-        aluno.setEmail(request.email());
-        aluno.setSenha(request.senha());
-        aluno.setDataNascimento(request.dataNascimento());
-        aluno.setModalidade(request.modalidade());
-        aluno.setObjetivo(request.objetivo());
-        aluno.setAtivo(false);
-        return alunoRepository.save(aluno);
-    }
+	    Map<String, String> erros = new HashMap<>();
+	    
+	    if (alunoRepository.findByEmail(request.email()).isPresent()) {
+	        erros.put("email", "Email já cadastrado");
+	    }
+	    
+	    if (!erros.isEmpty()) {
+	        throw new BusinessValidationException(erros);
+	    }
+
+	    Aluno aluno = new Aluno();
+	    aluno.setNome(request.nome());
+	    aluno.setEmail(request.email());
+	    aluno.setSenha(request.senha());
+	    aluno.setDataNascimento(request.dataNascimento());
+	    aluno.setModalidade(request.modalidade());
+	    aluno.setObjetivo(request.objetivo());
+	    aluno.setAtivo(false);
+	    return alunoRepository.save(aluno);
+	}
 	
 	// salvar
 	@Transactional

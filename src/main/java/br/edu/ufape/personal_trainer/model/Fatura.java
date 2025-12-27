@@ -33,6 +33,5 @@ public class Fatura {
 	@Column(nullable = false)
 	private Double valor;
 	
-	@Column(nullable = false)
 	private String status;
 }

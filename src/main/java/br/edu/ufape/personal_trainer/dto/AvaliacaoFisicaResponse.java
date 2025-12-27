@@ -14,7 +14,6 @@ public record AvaliacaoFisicaResponse(
         Double alturaCm,
         Double percentualGordura,
         String observacoes,
-        String foto,
         Boolean feitoPeloPersonal
 
 ) {
@@ -27,8 +26,7 @@ public record AvaliacaoFisicaResponse(
             a.getPesoKg(),
             a.getAlturaCm(),
             a.getPercentualGordura(),
-            a.getObservacoes(),
-            a.getFoto(),
+            a.getObservacoes(), 
             a.getFeitoPeloPersonal()
         );
     }

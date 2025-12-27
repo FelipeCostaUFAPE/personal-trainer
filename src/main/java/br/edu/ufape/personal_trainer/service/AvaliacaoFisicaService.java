@@ -44,8 +44,13 @@ public class AvaliacaoFisicaService {
 	    av.setAlturaCm(dto.alturaCm());
 	    av.setPercentualGordura(dto.percentualGordura());
 	    av.setObservacoes(dto.observacoes());
-	    av.setFoto(dto.foto());
-	    av.setFeitoPeloPersonal(dto.feitoPeloPersonal());
+	    
+	    if(aluno.getModalidade() == "presencial") {
+	    	av.setFeitoPeloPersonal(true);
+	    }
+	    if(aluno.getModalidade() == "online") {
+	    	av.setFeitoPeloPersonal(false);
+	    }
 
 	    return avaliacaoFisicaRepository.save(av);
 	}

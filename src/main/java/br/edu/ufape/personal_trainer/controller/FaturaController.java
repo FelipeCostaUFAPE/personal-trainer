@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -63,5 +64,17 @@ public class FaturaController {
         return faturaService.buscarPorStatus(status).stream()
                 .map(FaturaResponse::new)
                 .toList();
+    }
+    
+    @PatchMapping("/{id}/pagar")
+    public ResponseEntity<FaturaResponse> pagarFatura(@PathVariable Long id) {
+        Fatura fatura = faturaService.pagarFatura(id);
+        return ResponseEntity.ok(new FaturaResponse(fatura));
+    }
+
+    @PatchMapping("/{id}/cancelar")
+    public ResponseEntity<FaturaResponse> cancelarFatura(@PathVariable Long id) {
+        Fatura fatura = faturaService.cancelarFatura(id);
+        return ResponseEntity.ok(new FaturaResponse(fatura));
     }
 }

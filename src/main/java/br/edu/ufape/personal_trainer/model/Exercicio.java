@@ -37,6 +37,4 @@ public class Exercicio {
 	@Column(nullable = false)
 	private String descricao;
 	
-	@Column(nullable = true)
-	private String videoDemonstracao;
 }

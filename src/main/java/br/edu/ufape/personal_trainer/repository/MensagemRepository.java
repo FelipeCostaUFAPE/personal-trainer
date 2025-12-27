@@ -8,11 +8,8 @@ import org.springframework.stereotype.Repository;
 import br.edu.ufape.personal_trainer.model.Mensagem;
 
 @Repository
-public interface MensagemRepository extends JpaRepository<Mensagem, Long>{
-
-	List<Mensagem> findByChat_ChatIdOrderByTimeStamp(Long chatId);
+public interface MensagemRepository extends JpaRepository<Mensagem, Long> {
 	
-	List<Mensagem> findByChat_ChatIdAndEnviadoPeloAlunoTrue(Long chatId);
-	
-	List<Mensagem> findByChat_ChatIdAndEnviadoPeloAlunoFalse(Long chatId);
+    List<Mensagem> findByChat_ChatIdOrderByTimeStamp(Long chatId);
+    
 }

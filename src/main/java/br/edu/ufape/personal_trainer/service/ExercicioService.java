@@ -1,11 +1,14 @@
 package br.edu.ufape.personal_trainer.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import br.edu.ufape.personal_trainer.controller.advice.BusinessValidationException;
 import br.edu.ufape.personal_trainer.dto.ExercicioRequest;
 import br.edu.ufape.personal_trainer.model.Exercicio;
 import br.edu.ufape.personal_trainer.model.GrupoMuscular;
@@ -36,19 +39,24 @@ public class ExercicioService {
 	// criar dto
 	@Transactional
 	public Exercicio criar(ExercicioRequest request) {
-        GrupoMuscular grupoMuscular = grupoMuscularRepository.findById(request.grupoMuscularId()).orElseThrow(() -> new RuntimeException("Grupo muscular não encontrado"));
+	    Map<String, String> erros = new HashMap<>();
+	    
+	    if (!exercicioRepository.findByNomeContainingIgnoreCase(request.nome()).isEmpty()) {
+	        erros.put("nome", "Já existe um exercício com nome semelhante");
+	    }
+	    
+	    if (!erros.isEmpty()) {
+	        throw new BusinessValidationException(erros);
+	    }
 
-        if (!exercicioRepository.findByNomeContainingIgnoreCase(request.nome()).isEmpty()) {
-            throw new IllegalArgumentException("Já existe um exercício com nome semelhante: " + request.nome());
-        }
-        
-        Exercicio exercicio = new Exercicio();
-        exercicio.setNome(request.nome());
-        exercicio.setDescricao(request.descricao());
-        exercicio.setGrupoMuscular(grupoMuscular);
+	    GrupoMuscular grupoMuscular = grupoMuscularRepository.findById(request.grupoMuscularId()).orElseThrow(() -> new RuntimeException("Grupo muscular não encontrado"));
 
-        return exercicioRepository.save(exercicio);
-    }
+	    Exercicio exercicio = new Exercicio();
+	    exercicio.setNome(request.nome());
+	    exercicio.setDescricao(request.descricao());
+	    exercicio.setGrupoMuscular(grupoMuscular);
+	    return exercicioRepository.save(exercicio);
+	}
 	
 	// salvar
 	@Transactional
@@ -59,11 +67,18 @@ public class ExercicioService {
 	    if (exercicio.getGrupoMuscular() == null) {
 	        throw new IllegalArgumentException("Grupo muscular é obrigatório");
 	    }
+
+	    Map<String, String> erros = new HashMap<>();
 	    
 	    List<Exercicio> existentes = exercicioRepository.findByNomeContainingIgnoreCase(exercicio.getNome());
 	    if (!existentes.isEmpty() && !existentes.get(0).getExercicioId().equals(exercicio.getExercicioId())) {
-	        throw new IllegalArgumentException("Já existe um exercício com o nome: " + exercicio.getNome());
+	        erros.put("nome", "Já existe um exercício com nome semelhante");
 	    }
+	    
+	    if (!erros.isEmpty()) {
+	        throw new BusinessValidationException(erros);
+	    }
+
 	    return exercicioRepository.save(exercicio);
 	}
 	

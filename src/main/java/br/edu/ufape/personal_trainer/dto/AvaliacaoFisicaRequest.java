@@ -31,9 +31,5 @@ public record AvaliacaoFisicaRequest(
         Double percentualGordura,
 
         String observacoes,
-
-        String foto,
-
-        @NotNull(message = "É obrigatório informar se foi feita pelo personal")
         Boolean feitoPeloPersonal
 ) {}

@@ -32,9 +32,7 @@ public class PersonalController {
     }
 
     @PostMapping
-    public ResponseEntity<PersonalResponse> criar(
-            @Valid @RequestBody PersonalRequest request
-    ) {
+    public ResponseEntity<PersonalResponse> criar(@Valid @RequestBody PersonalRequest request) {
         Personal personal = personalService.criar(request);
         return ResponseEntity.status(201).body(new PersonalResponse(personal));
     }
@@ -45,14 +43,14 @@ public class PersonalController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/cref/{cref}")
-    public ResponseEntity<PersonalResponse> buscarPorCref(@PathVariable String cref) {
+    @GetMapping("/cref")
+    public ResponseEntity<PersonalResponse> buscarPorCref(@RequestParam String cref) {
         Personal personal = personalService.buscarPorCref(cref);
         return ResponseEntity.ok(new PersonalResponse(personal));
     }
 
-    @GetMapping("/email/{email}")
-    public ResponseEntity<PersonalResponse> buscarPorEmail(@PathVariable String email) {
+    @GetMapping("/email")
+    public ResponseEntity<PersonalResponse> buscarPorEmail(@RequestParam String email) {
         Personal personal = personalService.buscarPorEmail(email);
         return ResponseEntity.ok(new PersonalResponse(personal));
     }

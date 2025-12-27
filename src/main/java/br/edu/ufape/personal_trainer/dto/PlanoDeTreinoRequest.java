@@ -12,12 +12,13 @@ public record PlanoDeTreinoRequest(
     @Size(max = 100, message = "Nome deve ter no máximo 100 caracteres")
     String nome,
 
-    @NotNull(message = "Duração é obrigatória")
-    @Min(value = 1, message = "Duração mínima é 1 semana")
-    @Max(value = 52, message = "Duração máxima é 52 semanas")
-    Integer duracaoSemanas,
-
     @NotNull(message = "Data de início é obrigatória")
+    @Future(message = "Data inicio deve ser no futuro")
     @JsonFormat(pattern = "dd/MM/yyyy")
-    LocalDate dataInicio
+    LocalDate dataInicio,
+    
+    @NotNull(message = "Data de fim é obrigatória")
+    @Future(message = "Data fim deve ser no futuro")
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    LocalDate dataFim
 ) {}

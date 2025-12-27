@@ -41,18 +41,12 @@ public class PlanoDeTreinoService {
         if(aluno.getPersonal() == null) {
         	throw new IllegalArgumentException("Aluno precisa estar vinculado a um personal");
         }
-        
-        if (planoDeTreinoRepository.findByAluno_UsuarioIdAndAtivoTrue(aluno.getUsuarioId()).isPresent()) {
-            throw new IllegalStateException("Aluno já possui um plano ativo");
-        }
 
         PlanoDeTreino plano = new PlanoDeTreino();
         plano.setAluno(aluno);
         plano.setNome(request.nome());
-        plano.setDuracaoSemanas(request.duracaoSemanas());
         plano.setDataInicio(request.dataInicio());
-        plano.setDataFim(request.dataInicio().plusWeeks(request.duracaoSemanas()));
-        plano.setAtivo(true);
+        plano.setDataFim(request.dataFim());
 
         return planoDeTreinoRepository.save(plano);
     }

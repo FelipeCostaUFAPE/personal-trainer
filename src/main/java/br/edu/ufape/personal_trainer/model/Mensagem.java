@@ -15,26 +15,21 @@ import lombok.Setter;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 @Entity
-public class Mensagem{
-	@Id
-	@GeneratedValue
-	private Long mensagemId;
-	
-	@ManyToOne
-	@JoinColumn(name = "chatId")
-	private Chat chat;
-	
-	@Column(nullable = false)
-	private String conteudo;
-	
-	private String caminhoImagem;
-	private String caminhoVideo;
-	
-	@Column(nullable = false)
-	private LocalDateTime timeStamp;
-	
-	private Boolean enviadoPeloAluno;
-	
-	@Column(nullable = false)
-	private Boolean lida = false;
+public class Mensagem {
+    @Id
+    @GeneratedValue
+    private Long mensagemId;
+
+    @ManyToOne
+    @JoinColumn(name = "chatId")
+    private Chat chat;
+
+    @Column(nullable = false)
+    private String conteudo;
+
+    @Column(nullable = false)
+    private LocalDateTime timeStamp;
+
+    @Column(nullable = false)
+    private Boolean enviadoPeloAluno;
 }

@@ -38,10 +38,5 @@ public class AvaliacaoFisica {
 	
 	@Column(nullable = true)
 	private String observacoes;
-	
-	@Column(nullable = true)
-	private String foto;
-	
-	@Column(nullable = false)
 	private Boolean feitoPeloPersonal;
 }

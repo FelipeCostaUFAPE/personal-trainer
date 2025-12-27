@@ -32,10 +32,7 @@ public class MensagemController {
     }
 
     @PostMapping("/chat/{chatId}")
-    public ResponseEntity<MensagemResponse> enviar(
-            @PathVariable Long chatId,
-            @Valid @RequestBody MensagemRequest request
-    ) {
+    public ResponseEntity<MensagemResponse> enviar(@PathVariable Long chatId,@Valid @RequestBody MensagemRequest request) {
         Mensagem msg = mensagemService.criar(request, chatId);
         return ResponseEntity.status(201).body(new MensagemResponse(msg));
     }
@@ -49,20 +46,6 @@ public class MensagemController {
     @GetMapping("/chat/{chatId}")
     public List<MensagemResponse> buscarPorChatId(@PathVariable Long chatId) {
         return mensagemService.buscarPorChatId(chatId).stream()
-                .map(MensagemResponse::new)
-                .toList();
-    }
-
-    @GetMapping("/enviadoAluno/{chatId}")
-    public List<MensagemResponse> buscarEnviadasPeloAluno(@PathVariable Long chatId) {
-        return mensagemService.buscarEnviadasPeloAluno(chatId).stream()
-                .map(MensagemResponse::new)
-                .toList();
-    }
-
-    @GetMapping("/enviadoPersonal/{chatId}")
-    public List<MensagemResponse> buscarEnviadasPeloPersonal(@PathVariable Long chatId) {
-        return mensagemService.buscarEnviadasPeloPersonal(chatId).stream()
                 .map(MensagemResponse::new)
                 .toList();
     }

@@ -1,7 +1,6 @@
 package br.edu.ufape.personal_trainer.repository;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -14,6 +13,4 @@ public interface PlanoDeTreinoRepository extends JpaRepository<PlanoDeTreino, Lo
 	List<PlanoDeTreino> findByAluno_UsuarioId(Long alunoId);
 	
 	List<PlanoDeTreino> findByNome(String nome);
-	
-	Optional<PlanoDeTreino> findByAluno_UsuarioIdAndAtivoTrue(Long alunoId);
 }

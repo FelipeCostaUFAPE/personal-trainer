@@ -42,10 +42,8 @@ public class MensagemService {
         Mensagem mensagem = new Mensagem();
         mensagem.setConteudo(request.conteudo());
         mensagem.setEnviadoPeloAluno(request.enviadoPeloAluno());
-        mensagem.setLida(false);
         mensagem.setTimeStamp(LocalDateTime.now());
         mensagem.setChat(chat);
-
         return mensagemRepository.save(mensagem);
     }
 
@@ -73,13 +71,4 @@ public class MensagemService {
         return mensagemRepository.findByChat_ChatIdOrderByTimeStamp(chatId);
     }
 
-    @Transactional(readOnly = true)
-    public List<Mensagem> buscarEnviadasPeloAluno(Long chatId) {
-        return mensagemRepository.findByChat_ChatIdAndEnviadoPeloAlunoTrue(chatId);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Mensagem> buscarEnviadasPeloPersonal(Long chatId) {
-        return mensagemRepository.findByChat_ChatIdAndEnviadoPeloAlunoFalse(chatId);
-    }
 }
