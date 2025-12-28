@@ -43,7 +43,7 @@ public class ItemTreinoService {
 	public ItemTreino criar(ItemTreinoRequest request, Long planoId) {
 	    Exercicio exercicio = exercicioRepository.findById(request.exercicioId()).orElseThrow(() -> new RuntimeException("Exercício não encontrado")); 
 	    PlanoDeTreino plano = planoDeTreinoRepository.findById(planoId).orElseThrow(() -> new RuntimeException("Plano não encontrado"));
-	    
+
 	    if (plano.getAluno().getPersonal() == null) {
 	        throw new IllegalArgumentException("Plano pertence a aluno sem personal vinculado");
 	    }
@@ -55,9 +55,13 @@ public class ItemTreinoService {
 	    itemTreino.setRepeticoes(request.repeticoes());
 	    itemTreino.setCargaKg(request.cargaKg());
 	    itemTreino.setDescansoSegundos(request.descansoSegundos());
+	    itemTreino = itemTreinoRepository.save(itemTreino);
+	    plano.getItens().add(itemTreino);
+	    planoDeTreinoRepository.save(plano);
 
-	    return itemTreinoRepository.save(itemTreino);
+	    return itemTreino;
 	}
+
 	
 	// salvar
 	@Transactional

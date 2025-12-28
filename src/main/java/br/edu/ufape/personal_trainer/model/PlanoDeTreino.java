@@ -1,6 +1,7 @@
 package br.edu.ufape.personal_trainer.model;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -31,7 +32,7 @@ public class PlanoDeTreino {
 	
 	@JsonIgnore
 	@OneToMany(mappedBy = "plano", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<ItemTreino> itens;
+	private List<ItemTreino> itens = new ArrayList<>();
 	
 	@Column(nullable = false)
 	private String nome;

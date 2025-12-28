@@ -1,5 +1,6 @@
 package br.edu.ufape.personal_trainer.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -29,7 +30,7 @@ public class Exercicio {
 	
 	@JsonIgnore
 	@OneToMany(mappedBy = "exercicio")
-	private List<ItemTreino> itens;
+	private List<ItemTreino> itens = new ArrayList<>();;
 	
 	@Column(unique = true, nullable = false)
 	private String nome;
