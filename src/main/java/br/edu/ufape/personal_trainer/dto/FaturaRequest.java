@@ -15,9 +15,5 @@ public record FaturaRequest(
     @NotNull(message = "Data de vencimento é obrigatória")
     @Future(message = "Vencimento deve ser no futuro")
     @JsonFormat(pattern = "dd/MM/yyyy")
-    LocalDate dataVencimento,
-
-    @NotBlank(message = "Status é obrigatório")
-    @Pattern(regexp = "PENDENTE|PAGA|CANCELADA", message = "Status inválido")
-    String status
+    LocalDate dataVencimento
 ) {}
