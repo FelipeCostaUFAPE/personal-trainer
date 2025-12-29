@@ -3,6 +3,12 @@
 Projeto desenvolvido para a disciplina de **Programação Web**  
 Universidade Federal do Agreste de Pernambuco (UFAPE)
 
+#### Alunos:
+
+- Brendo Brito
+- Felipe Souza
+- Thiago Mauricio
+
 ---
 ## 1. Visão Geral do Produto
 
