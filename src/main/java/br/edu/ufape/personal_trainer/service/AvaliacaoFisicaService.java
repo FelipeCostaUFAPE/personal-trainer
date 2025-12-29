@@ -45,12 +45,8 @@ public class AvaliacaoFisicaService {
 	    av.setPercentualGordura(dto.percentualGordura());
 	    av.setObservacoes(dto.observacoes());
 	    
-	    if(aluno.getModalidade() == "presencial") {
-	    	av.setFeitoPeloPersonal(true);
-	    }
-	    if(aluno.getModalidade() == "online") {
-	    	av.setFeitoPeloPersonal(false);
-	    }
+	    String modalidade = aluno.getModalidade() != null ? aluno.getModalidade().trim().toLowerCase() : "";
+	    av.setFeitoPeloPersonal("presencial".equals(modalidade));
 
 	    return avaliacaoFisicaRepository.save(av);
 	}
