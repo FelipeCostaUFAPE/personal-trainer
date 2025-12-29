@@ -83,7 +83,6 @@ Os principais cenários foram validados via Swagger/Postman:
 
 - Cadastro de aluno e personal com validação de duplicidade (email/CREF)
 - Vinculação/desvinculação aluno-personal
-- Criação de plano com limite de 1 ativo por aluno
 - Criação de fatura com limite de 1 pendente e vencimento automático
 - Criação de chat apenas entre aluno e seu personal
 - Envio de mensagens com identificação do remetente
