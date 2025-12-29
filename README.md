@@ -77,7 +77,7 @@ Acesse após iniciar a aplicação:
 Permite testar todos os endpoints interativamente.
 
 ---
-## 6. Casos de Teste (Regras de Negócio Testadas Manualmente)
+## 6. Casos de Teste
 
 Os principais cenários foram validados via Swagger/Postman:
 
