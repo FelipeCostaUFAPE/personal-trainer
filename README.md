@@ -3,6 +3,12 @@
 Projeto desenvolvido para a disciplina de **Programação Web**  
 Universidade Federal do Agreste de Pernambuco (UFAPE)
 
+#### Alunos:
+
+- Brendo Brito
+- Felipe Souza
+- Thiago Mauricio
+
 ---
 ## 1. Visão Geral do Produto
 
@@ -77,13 +83,12 @@ Acesse após iniciar a aplicação:
 Permite testar todos os endpoints interativamente.
 
 ---
-## 6. Casos de Teste (Regras de Negócio Testadas Manualmente)
+## 6. Casos de Teste
 
 Os principais cenários foram validados via Swagger/Postman:
 
 - Cadastro de aluno e personal com validação de duplicidade (email/CREF)
 - Vinculação/desvinculação aluno-personal
-- Criação de plano com limite de 1 ativo por aluno
 - Criação de fatura com limite de 1 pendente e vencimento automático
 - Criação de chat apenas entre aluno e seu personal
 - Envio de mensagens com identificação do remetente
