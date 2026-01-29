@@ -22,27 +22,22 @@ public class GlobalExceptionHandler {
         return buildResponse(400, "Erro de validação", "Dados inválidos", request.getRequestURI(), errors);
     }
 
-    @ExceptionHandler(BusinessValidationException.class)
-    public ResponseEntity<ErrorResponse> handleBusinessValidation(
-            BusinessValidationException ex, HttpServletRequest request) {
-        return buildResponse(400, "Validação de negócio", "Dados inválidos", request.getRequestURI(), ex.getErrors());
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(
+            ResourceNotFoundException ex, HttpServletRequest request) {
+        return buildResponse(404, "Recurso não encontrado", ex.getMessage(), request.getRequestURI(), null);
     }
 
-    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
-    public ResponseEntity<ErrorResponse> handleBusinessRule(Exception ex, HttpServletRequest request) {
-        Map<String, String> detail = new HashMap<>();
-        detail.put("erro", ex.getMessage());
-        return buildResponse(400, "Regra de negócio", ex.getMessage(), request.getRequestURI(), detail);
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ErrorResponse> handleConflict(
+            DuplicateResourceException ex, HttpServletRequest request) {
+        return buildResponse(409, "Conflito", ex.getMessage(), request.getRequestURI(), null);
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleRuntimeException(
+            RuntimeException ex, HttpServletRequest request) {
         return buildResponse(500, "Erro inesperado", ex.getMessage(), request.getRequestURI(), null);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleInternalError(Exception ex, HttpServletRequest request) {
-        return buildResponse(500, "Erro interno", "Ocorreu um erro inesperado", request.getRequestURI(), null);
     }
 
     private ResponseEntity<ErrorResponse> buildResponse(

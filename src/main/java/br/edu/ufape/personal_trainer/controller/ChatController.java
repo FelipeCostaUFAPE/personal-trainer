@@ -1,17 +1,9 @@
 package br.edu.ufape.personal_trainer.controller;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 import br.edu.ufape.personal_trainer.dto.ChatRequest;
 import br.edu.ufape.personal_trainer.dto.ChatResponse;
 import br.edu.ufape.personal_trainer.model.Chat;
@@ -25,10 +17,13 @@ public class ChatController {
     @Autowired private ChatService chatService;
 
     @GetMapping
-    public List<ChatResponse> listarTodos() {
-        return chatService.listarTodos().stream()
+    public ResponseEntity<List<ChatResponse>> listarTodos() {
+        List<ChatResponse> responses = chatService.listarTodos()
+        		.stream()
                 .map(ChatResponse::new)
                 .toList();
+        
+        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/{id}")
@@ -50,17 +45,23 @@ public class ChatController {
     }
 
     @GetMapping("/aluno/{alunoId}")
-    public List<ChatResponse> buscarPorAlunoId(@PathVariable Long alunoId) {
-        return chatService.buscarPorAluno(alunoId).stream()
+    public ResponseEntity<List<ChatResponse>> buscarPorAlunoId(@PathVariable Long alunoId) {
+        List<ChatResponse> responses = chatService.buscarPorAluno(alunoId)
+        		.stream()
                 .map(ChatResponse::new)
                 .toList();
+        
+        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/personal/{personalId}")
-    public List<ChatResponse> buscarPorPersonalId(@PathVariable Long personalId) {
-        return chatService.buscarPorPersonal(personalId).stream()
+    public ResponseEntity<List<ChatResponse>> buscarPorPersonalId(@PathVariable Long personalId) {
+        List<ChatResponse> responses = chatService.buscarPorPersonal(personalId)
+        		.stream()
                 .map(ChatResponse::new)
                 .toList();
+        
+        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/entre/{alunoId}/{personalId}")

@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -19,10 +18,13 @@ public class PersonalController {
     private PersonalService personalService;
 
     @GetMapping
-    public List<PersonalResponse> listarTodos() {
-        return personalService.listarTodos().stream()
+    public ResponseEntity<List<PersonalResponse>> listarTodos() {
+        List<PersonalResponse> responses = personalService.listarTodos()
+        		.stream()
                 .map(PersonalResponse::new)
                 .toList();
+        
+        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/{id}")

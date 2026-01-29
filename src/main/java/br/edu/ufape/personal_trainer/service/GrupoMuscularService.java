@@ -3,65 +3,65 @@ package br.edu.ufape.personal_trainer.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import br.edu.ufape.personal_trainer.controller.advice.BusinessValidationException;
+import br.edu.ufape.personal_trainer.controller.advice.ResourceNotFoundException;
 import br.edu.ufape.personal_trainer.model.GrupoMuscular;
 import br.edu.ufape.personal_trainer.repository.GrupoMuscularRepository;
 
 @Service
 public class GrupoMuscularService {
 
-	@Autowired
-	private GrupoMuscularRepository grupoMuscularRepository;
-	
-	// listar todos
-	@Transactional(readOnly = true)
-	public List<GrupoMuscular> listarTodos(){
-		return grupoMuscularRepository.findAll();
-	}
-	
-	// buscar id
-	@Transactional(readOnly = true)
-	public GrupoMuscular buscarId(Long id) {
-		return grupoMuscularRepository.findById(id).orElseThrow(() -> new RuntimeException("Não existe grupo muscular com ID: " + id));
-	}
-	
-	// salvar
-	@Transactional
-	public GrupoMuscular salvar(GrupoMuscular grupoMuscular) {
-	    if (grupoMuscular.getNome() == null || grupoMuscular.getNome().trim().isEmpty()) {
-	        throw new IllegalArgumentException("Um grupo muscular deve ter um nome");
-	    }
+    @Autowired
+    private GrupoMuscularRepository grupoMuscularRepository;
 
-	    Map<String, String> erros = new HashMap<>();
-	    
-	    if (grupoMuscularRepository.findByNome(grupoMuscular.getNome()).isPresent()) {
-	        erros.put("nome", "Nome do grupo muscular já existe");
-	    }
-	    
-	    if (!erros.isEmpty()) {
-	        throw new BusinessValidationException(erros);
-	    }
+    // listar todos
+    @Transactional(readOnly = true)
+    public List<GrupoMuscular> listarTodos() {
+        return grupoMuscularRepository.findAll();
+    }
 
-	    return grupoMuscularRepository.save(grupoMuscular);
-	}
-	
-	// deletar
-	@Transactional
-	public void deletar(Long id) {
-		if(!grupoMuscularRepository.existsById(id)) {
-			throw new RuntimeException("Não existe grupo muscular com ID: " + id);
-		}
-		grupoMuscularRepository.deleteById(id);
-	}
-	
-	// metodos personalizados
-	@Transactional(readOnly = true)
-	public GrupoMuscular buscarPorNome(String nome) {
-		return grupoMuscularRepository.findByNome(nome).orElseThrow(() -> new RuntimeException("Não existe grupo muscular com NOME: " + nome));
-	}
+    // buscar id
+    @Transactional(readOnly = true)
+    public GrupoMuscular buscarId(Long id) {
+        return grupoMuscularRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Não existe grupo muscular com ID: " + id));
+    }
+
+    // criar
+    @Transactional
+    public GrupoMuscular criar(GrupoMuscular grupoMuscular) {
+        if (grupoMuscular.getNome() == null || grupoMuscular.getNome().trim().isEmpty()) {
+            throw new IllegalArgumentException("Um grupo muscular deve ter um nome");
+        }
+
+        Map<String, String> erros = new HashMap<>();
+        if (grupoMuscularRepository.findByNome(grupoMuscular.getNome()).isPresent()) {
+            erros.put("nome", "Nome do grupo muscular já existe");
+        }
+
+        if (!erros.isEmpty()) {
+            throw new BusinessValidationException(erros);
+        }
+
+        return grupoMuscularRepository.save(grupoMuscular);
+    }
+
+    // deletar
+    @Transactional
+    public void deletar(Long id) {
+        if (!grupoMuscularRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Não existe grupo muscular com ID: " + id);
+        }
+        grupoMuscularRepository.deleteById(id);
+    }
+
+    // metodos personalizados
+    @Transactional(readOnly = true)
+    public GrupoMuscular buscarPorNome(String nome) {
+        return grupoMuscularRepository.findByNome(nome)
+                .orElseThrow(() -> new ResourceNotFoundException("Não existe grupo muscular com NOME: " + nome));
+    }
 }

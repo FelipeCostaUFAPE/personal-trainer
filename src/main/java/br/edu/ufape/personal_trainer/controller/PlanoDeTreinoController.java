@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -19,10 +18,13 @@ public class PlanoDeTreinoController {
     private PlanoDeTreinoService planoService;
 
     @GetMapping
-    public List<PlanoDeTreinoResponse> listarTodos() {
-        return planoService.listarTodos().stream()
+    public ResponseEntity<List<PlanoDeTreinoResponse>> listarTodos() {
+        List<PlanoDeTreinoResponse> responses = planoService.listarTodos()
+        		.stream()
                 .map(PlanoDeTreinoResponse::new)
                 .toList();
+        
+        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/{id}")
@@ -44,10 +46,12 @@ public class PlanoDeTreinoController {
     }
 
     @GetMapping("/aluno/{alunoId}")
-    public List<PlanoDeTreinoResponse> buscarPorAlunoId(@PathVariable Long alunoId) {
-        return planoService.buscarPorAlunoId(alunoId).stream()
+    public ResponseEntity<List<PlanoDeTreinoResponse>> buscarPorAlunoId(@PathVariable Long alunoId) {
+        List<PlanoDeTreinoResponse> responses = planoService.buscarPorAlunoId(alunoId)
+        		.stream()
                 .map(PlanoDeTreinoResponse::new)
                 .toList();
+        
+        return ResponseEntity.ok(responses);
     }
-
 }

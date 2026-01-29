@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import br.edu.ufape.personal_trainer.controller.advice.BusinessValidationException;
+import br.edu.ufape.personal_trainer.controller.advice.ResourceNotFoundException;
 import br.edu.ufape.personal_trainer.dto.ChatRequest;
 import br.edu.ufape.personal_trainer.model.Aluno;
 import br.edu.ufape.personal_trainer.model.Chat;
@@ -18,9 +19,14 @@ import br.edu.ufape.personal_trainer.repository.PersonalRepository;
 @Service
 public class ChatService {
 
-    @Autowired private ChatRepository chatRepository;
-    @Autowired private AlunoRepository alunoRepository;
-    @Autowired private PersonalRepository personalRepository;
+    @Autowired 
+    private ChatRepository chatRepository;
+    
+    @Autowired 
+    private AlunoRepository alunoRepository;
+    
+    @Autowired 
+    private PersonalRepository personalRepository;
 
     @Transactional(readOnly = true)
     public List<Chat> listarTodos() {
@@ -29,7 +35,8 @@ public class ChatService {
 
     @Transactional(readOnly = true)
     public Chat buscarId(Long id) {
-        return chatRepository.findById(id).orElseThrow(() -> new RuntimeException("Não existe chat com ID: " + id));
+        return chatRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Não existe chat com ID: " + id));
     }
 
     @Transactional
@@ -40,9 +47,11 @@ public class ChatService {
             errors.put("chat", "Chat já existe entre este aluno e personal");
         }
 
-        Aluno aluno = alunoRepository.findById(request.alunoId()).orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
+        Aluno aluno = alunoRepository.findById(request.alunoId())
+                .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado"));
 
-        Personal personal = personalRepository.findById(request.personalId()).orElseThrow(() -> new RuntimeException("Personal não encontrado"));
+        Personal personal = personalRepository.findById(request.personalId())
+                .orElseThrow(() -> new ResourceNotFoundException("Personal não encontrado"));
 
         if (aluno.getPersonal() == null || !aluno.getPersonal().getUsuarioId().equals(personal.getUsuarioId())) {
             errors.put("personal", "Aluno não está vinculado a este personal");
@@ -59,26 +68,8 @@ public class ChatService {
     }
 
     @Transactional
-    public Chat salvar(Chat chat) {
-        if (chat.getAluno() == null || chat.getPersonal() == null) {
-            throw new IllegalArgumentException("Um chat deve ter um aluno e um personal");
-        }
-
-        Long alunoId = chat.getAluno().getUsuarioId();
-        Long personalId = chat.getPersonal().getUsuarioId();
-
-        if (chatRepository.findByAluno_UsuarioIdAndPersonal_UsuarioId(alunoId, personalId).isPresent()) {
-            Map<String, String> errors = new HashMap<>();
-            errors.put("chat", "Chat já existe entre esses usuários");
-            throw new BusinessValidationException(errors);
-        }
-
-        return chatRepository.save(chat);
-    }
-
-    @Transactional
     public void deletar(Long id) {
-        Chat chat = chatRepository.findById(id).orElseThrow(() -> new RuntimeException("Não existe chat com o ID: " + id));
+        Chat chat = buscarId(id);
         chatRepository.delete(chat);
     }
 
@@ -95,6 +86,6 @@ public class ChatService {
     @Transactional(readOnly = true)
     public Chat buscarPorAlunoIdAndPersonalId(Long alunoId, Long personalId) {
         return chatRepository.findByAluno_UsuarioIdAndPersonal_UsuarioId(alunoId, personalId)
-                .orElseThrow(() -> new RuntimeException("Chat não encontrado entre aluno ID " + alunoId + " e personal ID " + personalId));
+                .orElseThrow(() -> new ResourceNotFoundException("Chat não encontrado entre aluno ID " + alunoId + " e personal ID " + personalId));
     }
 }

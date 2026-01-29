@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -19,10 +18,13 @@ public class AlunoController {
     private AlunoService alunoService;
 
     @GetMapping
-    public List<AlunoResponse> listarTodos() {
-        return alunoService.listarTodos().stream()
+    public ResponseEntity<List<AlunoResponse>> listarTodos() {
+        List<AlunoResponse> responses = alunoService.listarTodos()
+        		.stream()
                 .map(AlunoResponse::new)
                 .toList();
+        
+        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/{id}")
@@ -44,17 +46,23 @@ public class AlunoController {
     }
 
     @GetMapping("/modalidade")
-    public List<AlunoResponse> listarPorModalidade(@RequestParam String modalidade) {
-        return alunoService.listarPorModalidade(modalidade).stream()
+    public ResponseEntity<List<AlunoResponse>> listarPorModalidade(@RequestParam String modalidade) {
+        List<AlunoResponse> responses = alunoService.listarPorModalidade(modalidade)
+        		.stream()
                 .map(AlunoResponse::new)
                 .toList();
+        
+        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/ativos")
-    public List<AlunoResponse> listarPorAtivo() {
-        return alunoService.listarPorAtivo().stream()
+    public ResponseEntity<List<AlunoResponse>> listarPorAtivo() {
+        List<AlunoResponse> responses = alunoService.listarPorAtivo()
+        		.stream()
                 .map(AlunoResponse::new)
                 .toList();
+        
+        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/email")
@@ -62,19 +70,18 @@ public class AlunoController {
         Aluno aluno = alunoService.buscarEmail(email);
         return ResponseEntity.ok(new AlunoResponse(aluno));
     }
-    
+
     @PatchMapping("/{alunoId}/vincular/{personalId}")
-    public ResponseEntity<AlunoResponse> vincularPersonal(@PathVariable Long alunoId, @PathVariable Long personalId){
-    	alunoService.VincularPersonal(alunoId, personalId);
-    	Aluno aluno = alunoService.buscarId(alunoId);
-    	return ResponseEntity.ok(new AlunoResponse(aluno));
-    }
-    
-    @PatchMapping("/{alunoId}/desvincular")
-    public ResponseEntity<AlunoResponse> desvincularPersonal(@PathVariable Long alunoId){
-    	alunoService.DesvincularPersonal(alunoId);
-    	Aluno aluno = alunoService.buscarId(alunoId);
-    	return ResponseEntity.ok(new AlunoResponse(aluno));
+    public ResponseEntity<AlunoResponse> vincularPersonal(@PathVariable Long alunoId,@PathVariable Long personalId) {
+        alunoService.VincularPersonal(alunoId, personalId);
+        Aluno aluno = alunoService.buscarId(alunoId);
+        return ResponseEntity.ok(new AlunoResponse(aluno));
     }
 
+    @PatchMapping("/{alunoId}/desvincular")
+    public ResponseEntity<AlunoResponse> desvincularPersonal(@PathVariable Long alunoId) {
+        alunoService.DesvincularPersonal(alunoId);
+        Aluno aluno = alunoService.buscarId(alunoId);
+        return ResponseEntity.ok(new AlunoResponse(aluno));
+    }
 }

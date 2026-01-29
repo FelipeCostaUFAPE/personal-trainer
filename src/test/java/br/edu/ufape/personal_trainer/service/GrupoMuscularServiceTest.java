@@ -30,7 +30,7 @@ class GrupoMuscularServiceTest {
         grupo.setNome("Peito");
 
         BusinessValidationException ex = assertThrows(BusinessValidationException.class,
-                () -> grupoService.salvar(grupo));
+                () -> grupoService.criar(grupo));
 
         assertTrue(ex.getErrors().containsKey("nome"));
         assertEquals("Nome do grupo muscular já existe", ex.getErrors().get("nome"));
@@ -45,7 +45,7 @@ class GrupoMuscularServiceTest {
         GrupoMuscular grupo = new GrupoMuscular();
         grupo.setNome("Trapézio");
 
-        GrupoMuscular salvo = grupoService.salvar(grupo);
+        GrupoMuscular salvo = grupoService.criar(grupo);
 
         assertNotNull(salvo);
         assertEquals("Trapézio", salvo.getNome());

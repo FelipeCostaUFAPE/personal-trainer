@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -19,10 +18,13 @@ public class MensagemController {
     private MensagemService mensagemService;
 
     @GetMapping
-    public List<MensagemResponse> listarTodos() {
-        return mensagemService.listarTodos().stream()
+    public ResponseEntity<List<MensagemResponse>> listarTodos() {
+        List<MensagemResponse> responses = mensagemService.listarTodos()
+        		.stream()
                 .map(MensagemResponse::new)
                 .toList();
+        
+        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/{id}")
@@ -32,7 +34,7 @@ public class MensagemController {
     }
 
     @PostMapping("/chat/{chatId}")
-    public ResponseEntity<MensagemResponse> enviar(@PathVariable Long chatId,@Valid @RequestBody MensagemRequest request) {
+    public ResponseEntity<MensagemResponse> enviar(@PathVariable Long chatId, @Valid @RequestBody MensagemRequest request) {
         Mensagem msg = mensagemService.criar(request, chatId);
         return ResponseEntity.status(201).body(new MensagemResponse(msg));
     }
@@ -44,9 +46,12 @@ public class MensagemController {
     }
 
     @GetMapping("/chat/{chatId}")
-    public List<MensagemResponse> buscarPorChatId(@PathVariable Long chatId) {
-        return mensagemService.buscarPorChatId(chatId).stream()
+    public ResponseEntity<List<MensagemResponse>> buscarPorChatId(@PathVariable Long chatId) {
+        List<MensagemResponse> responses = mensagemService.buscarPorChatId(chatId)
+        		.stream()
                 .map(MensagemResponse::new)
                 .toList();
+        
+        return ResponseEntity.ok(responses);
     }
 }

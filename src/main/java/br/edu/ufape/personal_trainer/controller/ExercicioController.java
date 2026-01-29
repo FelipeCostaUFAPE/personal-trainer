@@ -2,12 +2,12 @@ package br.edu.ufape.personal_trainer.controller;
 
 import br.edu.ufape.personal_trainer.dto.ExercicioRequest;
 import br.edu.ufape.personal_trainer.dto.ExercicioResponse;
+import br.edu.ufape.personal_trainer.model.Exercicio;
 import br.edu.ufape.personal_trainer.service.ExercicioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -18,21 +18,25 @@ public class ExercicioController {
     private ExercicioService exercicioService;
 
     @GetMapping
-    public List<ExercicioResponse> listarTodos() {
-        return exercicioService.listarTodos().stream()
+    public ResponseEntity<List<ExercicioResponse>> listarTodos() {
+        List<ExercicioResponse> responses = exercicioService.listarTodos()
+        		.stream()
                 .map(ExercicioResponse::new)
                 .toList();
+        
+        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ExercicioResponse> buscarId(@PathVariable Long id) {
-        return ResponseEntity.ok(new ExercicioResponse(exercicioService.buscarId(id)));
+        Exercicio exercicio = exercicioService.buscarId(id);
+        return ResponseEntity.ok(new ExercicioResponse(exercicio));
     }
 
     @PostMapping
     public ResponseEntity<ExercicioResponse> criar(@Valid @RequestBody ExercicioRequest request) {
-        return ResponseEntity.status(201)
-                .body(new ExercicioResponse(exercicioService.criar(request)));
+        Exercicio exercicio = exercicioService.criar(request);
+        return ResponseEntity.status(201).body(new ExercicioResponse(exercicio));
     }
 
     @DeleteMapping("/{id}")
@@ -42,16 +46,22 @@ public class ExercicioController {
     }
 
     @GetMapping("/grupoMuscular/{grupoMuscularId}")
-    public List<ExercicioResponse> buscarPorGrupoMuscular(@PathVariable Long grupoMuscularId) {
-        return exercicioService.buscarPorGrupoMuscular(grupoMuscularId).stream()
+    public ResponseEntity<List<ExercicioResponse>> buscarPorGrupoMuscular(@PathVariable Long grupoMuscularId) {
+        List<ExercicioResponse> responses = exercicioService.buscarPorGrupoMuscular(grupoMuscularId)
+        		.stream()
                 .map(ExercicioResponse::new)
                 .toList();
+        
+        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/nome")
-    public List<ExercicioResponse> buscarPorNome(@RequestParam String nome) {
-        return exercicioService.buscarPorNome(nome).stream()
+    public ResponseEntity<List<ExercicioResponse>> buscarPorNome(@RequestParam String nome) {
+        List<ExercicioResponse> responses = exercicioService.buscarPorNome(nome)
+        		.stream()
                 .map(ExercicioResponse::new)
                 .toList();
+        
+        return ResponseEntity.ok(responses);
     }
 }
