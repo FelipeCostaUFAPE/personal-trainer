@@ -26,13 +26,13 @@ public class PlanoDeTreino {
 	@GeneratedValue
 	private Long planoId;
 	
+	@JsonIgnore
 	@ManyToOne
 	@JoinColumn(name = "alunoId")
 	private Aluno aluno;
 	
-	@JsonIgnore
 	@OneToMany(mappedBy = "plano", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<ItemTreino> itens = new ArrayList<>();
+	private List<DiaTreino> dias = new ArrayList<>();
 	
 	@Column(nullable = false)
 	private String nome;

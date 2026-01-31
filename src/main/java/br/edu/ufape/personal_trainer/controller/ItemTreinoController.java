@@ -33,26 +33,16 @@ public class ItemTreinoController {
         return ResponseEntity.ok(new ItemTreinoResponse(itemTreino));
     }
 
-    @PostMapping("/plano/{planoId}/itens")
-    public ResponseEntity<ItemTreinoResponse> criar(@PathVariable Long planoId, @Valid @RequestBody ItemTreinoRequest request) {
-        ItemTreino itemTreino = itemTreinoService.criar(request, planoId);
-        return ResponseEntity.status(201).body(new ItemTreinoResponse(itemTreino));
+    @PostMapping("/dia/{diaId}/itens")
+    public ResponseEntity<ItemTreinoResponse> criar(@PathVariable Long diaId, @Valid @RequestBody ItemTreinoRequest request) {
+        ItemTreino item = itemTreinoService.criar(request, diaId);
+        return ResponseEntity.status(201).body(new ItemTreinoResponse(item));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         itemTreinoService.deletar(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/plano/{planoId}")
-    public ResponseEntity<List<ItemTreinoResponse>> buscarPorPlanoId(@PathVariable Long planoId) {
-        List<ItemTreinoResponse> responses = itemTreinoService.buscarPorPlanoId(planoId)
-        		.stream()
-                .map(ItemTreinoResponse::new)
-                .toList();
-        
-        return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/exercicio/{exercicioId}")

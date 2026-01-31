@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import br.edu.ufape.personal_trainer.dto.FaturaRequest;
+import br.edu.ufape.personal_trainer.enums.StatusFatura;
 import br.edu.ufape.personal_trainer.model.Aluno;
 import br.edu.ufape.personal_trainer.model.Fatura;
 import br.edu.ufape.personal_trainer.model.Personal;
@@ -42,7 +43,7 @@ class FaturaServiceTest {
 
     @Test
     void naoPermiteDuasFaturasPendentes() {
-        when(faturaRepository.findByAluno_UsuarioIdAndStatus(1L, "PENDENTE"))
+        when(faturaRepository.findByAluno_UsuarioIdAndStatus(1L, StatusFatura.PENDENTE))
                 .thenReturn(Optional.of(new Fatura()));
 
         FaturaRequest request = new FaturaRequest(1L, 150.0, LocalDate.now().plusDays(30));
@@ -56,14 +57,14 @@ class FaturaServiceTest {
 
     @Test
     void permiteCriarFaturaSemPendente() {
-        when(faturaRepository.findByAluno_UsuarioIdAndStatus(1L, "PENDENTE"))
+        when(faturaRepository.findByAluno_UsuarioIdAndStatus(1L, StatusFatura.PENDENTE))
                 .thenReturn(Optional.empty());
         when(faturaRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
         FaturaRequest request = new FaturaRequest(1L, 200.0, LocalDate.now().plusDays(15));
         Fatura fatura = faturaService.criar(request);
 
-        assertEquals("PENDENTE", fatura.getStatus());
+        assertEquals(StatusFatura.PENDENTE, fatura.getStatus());
         verify(faturaRepository).save(any());
     }
 }

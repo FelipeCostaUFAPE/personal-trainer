@@ -2,8 +2,11 @@ package br.edu.ufape.personal_trainer.model;
 
 import java.time.LocalDate;
 
+import br.edu.ufape.personal_trainer.enums.StatusFatura;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -33,5 +36,6 @@ public class Fatura {
 	@Column(nullable = false)
 	private Double valor;
 	
-	private String status;
+	@Enumerated(EnumType.STRING)
+	private StatusFatura status = StatusFatura.PENDENTE;
 }

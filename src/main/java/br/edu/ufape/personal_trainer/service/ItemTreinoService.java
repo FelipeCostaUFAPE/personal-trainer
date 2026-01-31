@@ -7,12 +7,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.edu.ufape.personal_trainer.controller.advice.ResourceNotFoundException;
 import br.edu.ufape.personal_trainer.dto.ItemTreinoRequest;
+import br.edu.ufape.personal_trainer.model.DiaTreino;
 import br.edu.ufape.personal_trainer.model.Exercicio;
 import br.edu.ufape.personal_trainer.model.ItemTreino;
-import br.edu.ufape.personal_trainer.model.PlanoDeTreino;
+import br.edu.ufape.personal_trainer.repository.DiaTreinoRepository;
 import br.edu.ufape.personal_trainer.repository.ExercicioRepository;
 import br.edu.ufape.personal_trainer.repository.ItemTreinoRepository;
-import br.edu.ufape.personal_trainer.repository.PlanoDeTreinoRepository;
 
 @Service
 public class ItemTreinoService {
@@ -24,7 +24,7 @@ public class ItemTreinoService {
     private ExercicioRepository exercicioRepository;
 
     @Autowired
-    private PlanoDeTreinoRepository planoDeTreinoRepository;
+    private DiaTreinoRepository diaTreinoRepository;
 
     @Transactional(readOnly = true)
     public List<ItemTreino> listarTodos() {
@@ -38,20 +38,20 @@ public class ItemTreinoService {
     }
 
     @Transactional
-    public ItemTreino criar(ItemTreinoRequest request, Long planoId) {
+    public ItemTreino criar(ItemTreinoRequest request, Long diaId) {
+        DiaTreino dia = diaTreinoRepository.findById(diaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Dia de treino não encontrado"));
+
         Exercicio exercicio = exercicioRepository.findById(request.exercicioId())
                 .orElseThrow(() -> new ResourceNotFoundException("Exercício não encontrado"));
 
-        PlanoDeTreino plano = planoDeTreinoRepository.findById(planoId)
-                .orElseThrow(() -> new ResourceNotFoundException("Plano não encontrado"));
-
-        if (plano.getAluno().getPersonal() == null) {
+        if (dia.getPlano().getAluno().getPersonal() == null) {
             throw new IllegalArgumentException("Plano pertence a aluno sem personal vinculado");
         }
 
         ItemTreino itemTreino = new ItemTreino();
+        itemTreino.setDiaTreino(dia);
         itemTreino.setExercicio(exercicio);
-        itemTreino.setPlano(plano);
         itemTreino.setSeries(request.series());
         itemTreino.setRepeticoes(request.repeticoes());
         itemTreino.setCargaKg(request.cargaKg());
@@ -59,8 +59,8 @@ public class ItemTreinoService {
 
         itemTreino = itemTreinoRepository.save(itemTreino);
 
-        plano.getItens().add(itemTreino);
-        planoDeTreinoRepository.save(plano);
+        dia.getItens().add(itemTreino);
+        diaTreinoRepository.save(dia);
 
         return itemTreino;
     }
@@ -71,11 +71,6 @@ public class ItemTreinoService {
             throw new ResourceNotFoundException("Não existe item treino com ID: " + id);
         }
         itemTreinoRepository.deleteById(id);
-    }
-
-    @Transactional(readOnly = true)
-    public List<ItemTreino> buscarPorPlanoId(Long id) {
-        return itemTreinoRepository.findByPlano_PlanoId(id);
     }
 
     @Transactional(readOnly = true)

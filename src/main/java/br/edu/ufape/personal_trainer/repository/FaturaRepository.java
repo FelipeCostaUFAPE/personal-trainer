@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import br.edu.ufape.personal_trainer.enums.StatusFatura;
 import br.edu.ufape.personal_trainer.model.Fatura;
 
 @Repository
@@ -15,5 +16,5 @@ public interface FaturaRepository extends JpaRepository<Fatura, Long>{
 	
 	List<Fatura> findByStatus(String status);
 	
-	Optional<Fatura> findByAluno_UsuarioIdAndStatus(Long alunoId, String status);
+	Optional<Fatura> findByAluno_UsuarioIdAndStatus(Long alunoId, StatusFatura status);
 }

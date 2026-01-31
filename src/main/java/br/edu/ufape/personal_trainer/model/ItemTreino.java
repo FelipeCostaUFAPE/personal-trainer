@@ -1,5 +1,7 @@
 package br.edu.ufape.personal_trainer.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -19,12 +21,13 @@ public class ItemTreino {
 	private Long itemTreinoId;
 	
 	@ManyToOne
-	@JoinColumn(name = "planoId", nullable = false)
-	private PlanoDeTreino plano;
-	
-	@ManyToOne
 	@JoinColumn(name = "exercicioId", nullable = false)
 	private Exercicio exercicio;
+	
+	@JsonBackReference
+	@ManyToOne
+	@JoinColumn(name = "dia_treino_id", nullable = false)
+	private DiaTreino diaTreino;
 	
 	@Column(nullable = false)
 	private int series;

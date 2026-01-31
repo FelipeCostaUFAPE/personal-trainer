@@ -39,6 +39,7 @@ public class Aluno extends Usuario{
 	@OneToMany(mappedBy = "aluno", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Fatura> faturas = new ArrayList<>();
 	
+	@JsonIgnore
 	@OneToMany(mappedBy = "aluno", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<PlanoDeTreino> planos = new ArrayList<>();
 	

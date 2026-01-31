@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.edu.ufape.personal_trainer.controller.advice.ResourceNotFoundException;
 import br.edu.ufape.personal_trainer.dto.FaturaRequest;
+import br.edu.ufape.personal_trainer.enums.StatusFatura;
 import br.edu.ufape.personal_trainer.model.Aluno;
 import br.edu.ufape.personal_trainer.model.Fatura;
 import br.edu.ufape.personal_trainer.repository.AlunoRepository;
@@ -49,7 +50,7 @@ public class FaturaService {
             throw new IllegalArgumentException("Aluno precisa estar vinculado a um personal");
         }
 
-        if (faturaRepository.findByAluno_UsuarioIdAndStatus(aluno.getUsuarioId(), "PENDENTE").isPresent()) {
+        if (faturaRepository.findByAluno_UsuarioIdAndStatus(aluno.getUsuarioId(), StatusFatura.PENDENTE).isPresent()) {
             throw new IllegalStateException("Aluno já possui uma fatura pendente");
         }
 
@@ -57,7 +58,7 @@ public class FaturaService {
         fatura.setAluno(aluno);
         fatura.setValor(request.valor());
         fatura.setDataVencimento(request.dataVencimento());
-        fatura.setStatus("PENDENTE");
+        fatura.setStatus(StatusFatura.PENDENTE);
         return faturaRepository.save(fatura);
     }
 
@@ -87,11 +88,10 @@ public class FaturaService {
 
     @Transactional
     private void verificarVencimento(Fatura fatura) {
-        if ("PENDENTE".equals(fatura.getStatus())
-                && fatura.getDataVencimento().isBefore(LocalDate.now())) {
-            fatura.setStatus("VENCIDA");
-            faturaRepository.save(fatura);
-        }
+    	if (fatura.getStatus() == StatusFatura.PENDENTE && fatura.getDataVencimento().isBefore(LocalDate.now())) {
+    	    fatura.setStatus(StatusFatura.VENCIDA);
+    	    faturaRepository.save(fatura);
+    	}
     }
 
     @Transactional
@@ -99,11 +99,11 @@ public class FaturaService {
         Fatura fatura = faturaRepository.findById(faturaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Fatura não encontrada"));
 
-        if (!"PENDENTE".equals(fatura.getStatus())) {
+        if (fatura.getStatus() != StatusFatura.PENDENTE) {
             throw new IllegalStateException("Esta fatura já foi paga, cancelada ou está vencida");
         }
-
-        fatura.setStatus("PAGA");
+        
+        fatura.setStatus(StatusFatura.PAGA);
         fatura.setDataPagamento(LocalDate.now());
         return faturaRepository.save(fatura);
     }
@@ -113,11 +113,11 @@ public class FaturaService {
         Fatura fatura = faturaRepository.findById(faturaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Fatura não encontrada"));
 
-        if (!"PENDENTE".equals(fatura.getStatus())) {
+        if (fatura.getStatus() != StatusFatura.PENDENTE) {
             throw new IllegalStateException("Só é possível cancelar faturas pendentes");
         }
-
-        fatura.setStatus("CANCELADA");
+        
+        fatura.setStatus(StatusFatura.CANCELADA);
         return faturaRepository.save(fatura);
     }
 }

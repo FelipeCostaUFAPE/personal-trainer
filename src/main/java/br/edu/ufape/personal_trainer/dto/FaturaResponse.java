@@ -2,6 +2,7 @@ package br.edu.ufape.personal_trainer.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import br.edu.ufape.personal_trainer.enums.StatusFatura;
 import br.edu.ufape.personal_trainer.model.Fatura;
 
 import java.time.LocalDate;
@@ -17,7 +18,7 @@ public record FaturaResponse(
     @JsonFormat(pattern = "dd/MM/yyyy")
     LocalDate dataPagamento,
 
-    String status
+    StatusFatura status
 ) {
     public FaturaResponse(Fatura f) {
         this(
