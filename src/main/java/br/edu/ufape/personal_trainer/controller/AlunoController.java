@@ -7,6 +7,8 @@ import br.edu.ufape.personal_trainer.service.AlunoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -18,6 +20,7 @@ public class AlunoController {
     private AlunoService alunoService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<AlunoResponse>> listarTodos() {
         List<AlunoResponse> responses = alunoService.listarTodos()
         		.stream()
@@ -27,25 +30,29 @@ public class AlunoController {
         return ResponseEntity.ok(responses);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AlunoResponse> buscarId(@PathVariable Long id) {
         Aluno aluno = alunoService.buscarId(id);
         return ResponseEntity.ok(new AlunoResponse(aluno));
     }
 
     @PostMapping
-    public ResponseEntity<AlunoResponse> salvar(@Valid @RequestBody AlunoRequest request) {
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<AlunoResponse> criar(@Valid @RequestBody AlunoRequest request) {
         Aluno aluno = alunoService.criar(request);
         return ResponseEntity.status(201).body(new AlunoResponse(aluno));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         alunoService.deletar(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/modalidade")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<AlunoResponse>> listarPorModalidade(@RequestParam String modalidade) {
         List<AlunoResponse> responses = alunoService.listarPorModalidade(modalidade)
         		.stream()
@@ -56,6 +63,7 @@ public class AlunoController {
     }
 
     @GetMapping("/ativos")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<AlunoResponse>> listarPorAtivo() {
         List<AlunoResponse> responses = alunoService.listarPorAtivo()
         		.stream()
@@ -66,21 +74,34 @@ public class AlunoController {
     }
 
     @GetMapping("/email")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AlunoResponse> buscarEmail(@RequestParam String email) {
         Aluno aluno = alunoService.buscarEmail(email);
         return ResponseEntity.ok(new AlunoResponse(aluno));
     }
 
     @PatchMapping("/{alunoId}/vincular/{personalId}")
-    public ResponseEntity<AlunoResponse> vincularPersonal(@PathVariable Long alunoId,@PathVariable Long personalId) {
-        alunoService.VincularPersonal(alunoId, personalId);
+    @PreAuthorize("hasAnyRole('PERSONAL','ADMIN')")
+    public ResponseEntity<AlunoResponse> vincularPersonal(@PathVariable Long alunoId, @PathVariable Long personalId, Authentication authentication) {
+        String email = authentication.getName();
+        boolean isAdmin = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        alunoService.vincularPersonal(alunoId, personalId, email, isAdmin);
         Aluno aluno = alunoService.buscarId(alunoId);
         return ResponseEntity.ok(new AlunoResponse(aluno));
     }
 
     @PatchMapping("/{alunoId}/desvincular")
-    public ResponseEntity<AlunoResponse> desvincularPersonal(@PathVariable Long alunoId) {
-        alunoService.DesvincularPersonal(alunoId);
+    @PreAuthorize("hasAnyRole('PERSONAL','ADMIN')")
+    public ResponseEntity<AlunoResponse> desvincularPersonal(@PathVariable Long alunoId, Authentication authentication) {
+        String email = authentication.getName();
+        boolean isAdmin = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        alunoService.desvincularPersonal(alunoId, email, isAdmin);
         Aluno aluno = alunoService.buscarId(alunoId);
         return ResponseEntity.ok(new AlunoResponse(aluno));
     }

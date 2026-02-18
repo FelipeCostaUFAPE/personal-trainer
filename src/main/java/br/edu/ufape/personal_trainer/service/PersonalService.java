@@ -4,11 +4,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import br.edu.ufape.personal_trainer.controller.advice.BusinessValidationException;
 import br.edu.ufape.personal_trainer.controller.advice.ResourceNotFoundException;
 import br.edu.ufape.personal_trainer.dto.PersonalRequest;
+import br.edu.ufape.personal_trainer.enums.Role;
 import br.edu.ufape.personal_trainer.model.Personal;
 import br.edu.ufape.personal_trainer.repository.PersonalRepository;
 
@@ -17,6 +19,9 @@ public class PersonalService {
 
     @Autowired
     private PersonalRepository personalRepository;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public List<Personal> listarTodos() {
@@ -48,8 +53,9 @@ public class PersonalService {
         Personal personal = new Personal();
         personal.setNome(request.nome());
         personal.setEmail(request.email());
-        personal.setSenha(request.senha());
+        personal.setSenha(passwordEncoder.encode(request.senha()));
         personal.setCref(request.cref());
+        personal.setRole(Role.PERSONAL);
         return personalRepository.save(personal);
     }
 
@@ -60,7 +66,6 @@ public class PersonalService {
         if (!personal.getAlunos().isEmpty()) {
             throw new IllegalStateException("Personal possui alunos vinculados — não pode ser deletado");
         }
-
         personalRepository.deleteById(id);
     }
 

@@ -4,11 +4,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import br.edu.ufape.personal_trainer.controller.advice.BusinessValidationException;
 import br.edu.ufape.personal_trainer.controller.advice.ResourceNotFoundException;
 import br.edu.ufape.personal_trainer.dto.AlunoRequest;
+import br.edu.ufape.personal_trainer.enums.Role;
 import br.edu.ufape.personal_trainer.model.Aluno;
 import br.edu.ufape.personal_trainer.model.Personal;
 import br.edu.ufape.personal_trainer.repository.AlunoRepository;
@@ -22,6 +24,9 @@ public class AlunoService {
 
     @Autowired
     private PersonalRepository personalRepository;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     // listar todos
     @Transactional(readOnly = true)
@@ -52,11 +57,12 @@ public class AlunoService {
         Aluno aluno = new Aluno();
         aluno.setNome(request.nome());
         aluno.setEmail(request.email());
-        aluno.setSenha(request.senha());
+        aluno.setSenha(passwordEncoder.encode(request.senha()));
         aluno.setDataNascimento(request.dataNascimento());
         aluno.setModalidade(request.modalidade());
         aluno.setObjetivo(request.objetivo());
         aluno.setAtivo(false);
+        aluno.setRole(Role.ALUNO);
         return alunoRepository.save(aluno);
     }
 
@@ -93,13 +99,23 @@ public class AlunoService {
     }
 
     @Transactional
-    public void VincularPersonal(Long alunoId, Long personalId) {
+    public void vincularPersonal(Long alunoId, Long personalId,  String emailLogado, boolean isAdmin) {
         Aluno aluno = buscarId(alunoId);
-        Personal personal = personalRepository.findById(personalId)
-                .orElseThrow(() -> new ResourceNotFoundException("Personal não encontrado"));
 
         if (aluno.getPersonal() != null) {
             throw new IllegalArgumentException("Aluno já está vinculado a um personal");
+        }
+
+        Personal personal = personalRepository.findById(personalId)
+                .orElseThrow(() -> new ResourceNotFoundException("Personal não encontrado"));
+
+        if (!isAdmin) {
+            Personal personalLogado = personalRepository.findByEmail(emailLogado)
+                    .orElseThrow(() -> new ResourceNotFoundException("Personal logado não encontrado"));
+
+            if (!personalLogado.getUsuarioId().equals(personalId)) {
+                throw new IllegalStateException("Você só pode vincular aluno a você mesmo");
+            }
         }
 
         aluno.setPersonal(personal);
@@ -108,11 +124,20 @@ public class AlunoService {
     }
 
     @Transactional
-    public void DesvincularPersonal(Long alunoId) {
+    public void desvincularPersonal(Long alunoId, String emailLogado, boolean isAdmin) {
         Aluno aluno = buscarId(alunoId);
 
         if (aluno.getPersonal() == null) {
             throw new IllegalArgumentException("Aluno não está vinculado a um personal");
+        }
+
+        if (!isAdmin) {
+            Personal personalLogado = personalRepository.findByEmail(emailLogado)
+                    .orElseThrow(() -> new ResourceNotFoundException("Personal logado não encontrado"));
+
+            if (!aluno.getPersonal().getUsuarioId().equals(personalLogado.getUsuarioId())) {
+                throw new IllegalStateException("Você só pode desvincular alunos vinculados a você");
+            }
         }
 
         aluno.setPersonal(null);
