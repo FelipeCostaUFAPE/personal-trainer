@@ -7,6 +7,7 @@ import br.edu.ufape.personal_trainer.service.PlanoDeTreinoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class PlanoDeTreinoController {
     private PlanoDeTreinoService planoService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PlanoDeTreinoResponse>> listarTodos() {
         List<PlanoDeTreinoResponse> responses = planoService.listarTodos()
         		.stream()
@@ -28,24 +30,28 @@ public class PlanoDeTreinoController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PlanoDeTreinoResponse> buscarId(@PathVariable Long id) {
         PlanoDeTreino plano = planoService.buscarId(id);
         return ResponseEntity.ok(new PlanoDeTreinoResponse(plano));
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','PERSONAL')")
     public ResponseEntity<PlanoDeTreinoResponse> criar(@Valid @RequestBody PlanoDeTreinoRequest request) {
         PlanoDeTreino plano = planoService.criar(request);
         return ResponseEntity.status(201).body(new PlanoDeTreinoResponse(plano));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         planoService.deletar(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/aluno/{alunoId}")
+    @PreAuthorize("hasAnyRole('ADMIN','PERSONAL','ALUNO')")
     public ResponseEntity<List<PlanoDeTreinoResponse>> buscarPorAlunoId(@PathVariable Long alunoId) {
         List<PlanoDeTreinoResponse> responses = planoService.buscarPorAlunoId(alunoId)
         		.stream()

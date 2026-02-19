@@ -144,4 +144,9 @@ public class AlunoService {
         aluno.setAtivo(false);
         alunoRepository.save(aluno);
     }
+    
+    @Transactional(readOnly = true)
+    public List<Aluno> listarAlunosPersonal(Long personalId) {
+        return alunoRepository.findAlunosByPersonalId(personalId);
+    }
 }

@@ -1,16 +1,15 @@
 package br.edu.ufape.personal_trainer.integration;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 import java.time.LocalDate;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-
 import br.edu.ufape.personal_trainer.dto.AvaliacaoFisicaRequest;
+import br.edu.ufape.personal_trainer.enums.Role;
 import br.edu.ufape.personal_trainer.model.Aluno;
 import br.edu.ufape.personal_trainer.model.AvaliacaoFisica;
 import br.edu.ufape.personal_trainer.model.Personal;
@@ -28,8 +27,14 @@ class AvaliacaoFisicaIntegrationTest {
     @Autowired private PersonalRepository personalRepository;
 
     @Test
+    @WithMockUser(username = "personal@email.com", roles = {"PERSONAL"})
     void feitoPeloPersonalAutomaticoPorModalidade() {
-        Personal personal = personalRepository.save(new Personal());
+        Personal personal = new Personal();
+        personal.setNome("Personal Teste");
+        personal.setEmail("personal@email.com");
+        personal.setSenha("123");
+        personal.setCref("123456-SP");
+        personal = personalRepository.save(personal);
 
         Aluno alunoPresencial = new Aluno();
         alunoPresencial.setNome("Presencial");
@@ -39,6 +44,7 @@ class AvaliacaoFisicaIntegrationTest {
         alunoPresencial.setModalidade("presencial");
         alunoPresencial.setObjetivo("hipertrofia");
         alunoPresencial.setPersonal(personal);
+        alunoPresencial.setRole(Role.ALUNO);
         alunoPresencial = alunoRepository.save(alunoPresencial);
 
         Aluno alunoOnline = new Aluno();
@@ -49,17 +55,34 @@ class AvaliacaoFisicaIntegrationTest {
         alunoOnline.setModalidade("online");
         alunoOnline.setObjetivo("emagrecimento");
         alunoOnline.setPersonal(personal);
-        alunoOnline = alunoRepository.save(alunoOnline);
+        alunoOnline.setRole(Role.ALUNO);
+        
+        Aluno alunoOnlineSalvo = alunoRepository.save(alunoOnline);
 
-        AvaliacaoFisicaRequest request = new AvaliacaoFisicaRequest(
-                null, LocalDate.now(), 80.0, 1.75, 15.0, "obs", true);
-
-        request = new AvaliacaoFisicaRequest(alunoPresencial.getUsuarioId(), LocalDate.now(), 80.0, 1.75, 15.0, "obs", true);
-        AvaliacaoFisica avPresencial = avaliacaoService.criar(request, alunoPresencial);
+        AvaliacaoFisicaRequest requestPresencial = new AvaliacaoFisicaRequest(
+                alunoPresencial.getUsuarioId(),
+                LocalDate.now(),
+                80.0,
+                1.75,
+                15.0,
+                "obs",
+                true
+        );
+        AvaliacaoFisica avPresencial = avaliacaoService.criar(requestPresencial, alunoPresencial);
         assertTrue(avPresencial.getFeitoPeloPersonal());
 
-        request = new AvaliacaoFisicaRequest(alunoOnline.getUsuarioId(), LocalDate.now(), 70.0, 1.70, 12.0, "obs", false);
-        AvaliacaoFisica avOnline = avaliacaoService.criar(request, alunoOnline);
-        assertFalse(avOnline.getFeitoPeloPersonal());
+        AvaliacaoFisicaRequest requestOnline = new AvaliacaoFisicaRequest(
+                alunoOnlineSalvo.getUsuarioId(),
+                LocalDate.now(),
+                70.0,
+                1.70,
+                12.0,
+                "obs",
+                false
+        );
+
+        assertThrows(IllegalArgumentException.class,
+                () -> avaliacaoService.criar(requestOnline, alunoOnlineSalvo),
+                "Personal não deve poder criar avaliação para aluno online");
     }
 }

@@ -1,12 +1,11 @@
 package br.edu.ufape.personal_trainer.service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import br.edu.ufape.personal_trainer.controller.advice.BusinessValidationException;
 import br.edu.ufape.personal_trainer.controller.advice.ResourceNotFoundException;
 import br.edu.ufape.personal_trainer.dto.ChatRequest;
 import br.edu.ufape.personal_trainer.model.Aluno;
@@ -41,11 +40,11 @@ public class ChatService {
 
     @Transactional
     public Chat criar(ChatRequest request) {
-        Map<String, String> errors = new HashMap<>();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String usuarioLogado = auth.getName();
 
-        if (chatRepository.findByAluno_UsuarioIdAndPersonal_UsuarioId(request.alunoId(), request.personalId()).isPresent()) {
-            errors.put("chat", "Chat já existe entre este aluno e personal");
-        }
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
         Aluno aluno = alunoRepository.findById(request.alunoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado"));
@@ -53,17 +52,28 @@ public class ChatService {
         Personal personal = personalRepository.findById(request.personalId())
                 .orElseThrow(() -> new ResourceNotFoundException("Personal não encontrado"));
 
-        if (aluno.getPersonal() == null || !aluno.getPersonal().getUsuarioId().equals(personal.getUsuarioId())) {
-            errors.put("personal", "Aluno não está vinculado a este personal");
+        if (!isAdmin) {
+            boolean usuarioEhAluno = aluno.getEmail().equals(usuarioLogado);
+            boolean usuarioEhPersonal = personal.getEmail().equals(usuarioLogado);
+            if (!usuarioEhAluno && !usuarioEhPersonal) {
+                throw new IllegalArgumentException("Usuário não pode criar chat entre terceiros");
+            }
+            if (aluno.getPersonal() == null ||
+                !aluno.getPersonal().getUsuarioId().equals(personal.getUsuarioId())) {
+                throw new IllegalArgumentException("Aluno não pertence a este personal");
+            }
         }
 
-        if (!errors.isEmpty()) {
-            throw new BusinessValidationException(errors);
+        if (chatRepository
+                .findByAluno_UsuarioIdAndPersonal_UsuarioId(request.alunoId(), request.personalId())
+                .isPresent()) {
+            throw new IllegalStateException("Chat já existe");
         }
 
         Chat chat = new Chat();
         chat.setAluno(aluno);
         chat.setPersonal(personal);
+
         return chatRepository.save(chat);
     }
 
@@ -71,16 +81,6 @@ public class ChatService {
     public void deletar(Long id) {
         Chat chat = buscarId(id);
         chatRepository.delete(chat);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Chat> buscarPorAluno(Long alunoId) {
-        return chatRepository.findByAluno_UsuarioId(alunoId);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Chat> buscarPorPersonal(Long personalId) {
-        return chatRepository.findByPersonal_UsuarioId(personalId);
     }
 
     @Transactional(readOnly = true)

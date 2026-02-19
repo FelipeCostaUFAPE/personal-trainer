@@ -2,16 +2,14 @@ package br.edu.ufape.personal_trainer.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
 import java.util.Map;
 import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+import org.springframework.security.crypto.password.PasswordEncoder;
 import br.edu.ufape.personal_trainer.controller.advice.BusinessValidationException;
 import br.edu.ufape.personal_trainer.dto.PersonalRequest;
 import br.edu.ufape.personal_trainer.model.Personal;
@@ -21,6 +19,8 @@ import br.edu.ufape.personal_trainer.repository.PersonalRepository;
 class PersonalServiceTest {
 
     @Mock private PersonalRepository personalRepository;
+
+    @Mock private PasswordEncoder passwordEncoder;
 
     @InjectMocks private PersonalService personalService;
 
@@ -46,7 +46,10 @@ class PersonalServiceTest {
     void permiteCriarPersonalComDadosUnicos() {
         when(personalRepository.findByEmail("novo@email.com")).thenReturn(Optional.empty());
         when(personalRepository.findByCref("99999-SP")).thenReturn(Optional.empty());
-        when(personalRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        when(passwordEncoder.encode("123456")).thenReturn("encoded-123456");
+
+        when(personalRepository.save(any(Personal.class))).thenAnswer(i -> i.getArgument(0));
 
         PersonalRequest request = new PersonalRequest("Novo Personal", "novo@email.com", "123456", "99999-SP");
 
@@ -55,6 +58,9 @@ class PersonalServiceTest {
         assertNotNull(personal);
         assertEquals("novo@email.com", personal.getEmail());
         assertEquals("99999-SP", personal.getCref());
+        assertEquals("encoded-123456", personal.getSenha());
+
+        verify(passwordEncoder).encode("123456");
         verify(personalRepository).save(any());
     }
 }

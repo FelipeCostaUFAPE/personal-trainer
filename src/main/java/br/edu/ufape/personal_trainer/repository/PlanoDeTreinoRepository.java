@@ -13,4 +13,6 @@ public interface PlanoDeTreinoRepository extends JpaRepository<PlanoDeTreino, Lo
 	List<PlanoDeTreino> findByAluno_UsuarioId(Long alunoId);
 	
 	List<PlanoDeTreino> findByNome(String nome);
+
+	List<PlanoDeTreino> findByAlunoUsuarioId(Long alunoId);
 }

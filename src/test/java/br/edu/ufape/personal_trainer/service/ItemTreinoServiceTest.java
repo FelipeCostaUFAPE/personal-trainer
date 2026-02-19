@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import br.edu.ufape.personal_trainer.dto.ItemTreinoRequest;
+import br.edu.ufape.personal_trainer.enums.Role;
 import br.edu.ufape.personal_trainer.model.*;
 import br.edu.ufape.personal_trainer.repository.*;
 
@@ -19,15 +20,24 @@ class ItemTreinoServiceTest {
     @Mock private ExercicioRepository exercicioRepository;
     @Mock private DiaTreinoRepository diaTreinoRepository;
     @Mock private PlanoDeTreinoRepository planoRepository;
+    @Mock private AuthService authService;
+
     @InjectMocks private ItemTreinoService itemService;
 
     @Test
     void permiteCriarItemDeTreino() {
+        Personal usuarioLogado = new Personal();
+        usuarioLogado.setUsuarioId(100L);
+        usuarioLogado.setRole(Role.PERSONAL);
+        when(authService.usuarioLogado()).thenReturn(usuarioLogado);
+
         DiaTreino dia = new DiaTreino();
         dia.setId(1L);
         PlanoDeTreino plano = new PlanoDeTreino();
         Aluno aluno = new Aluno();
         Personal personal = new Personal();
+        personal.setUsuarioId(100L);
+        personal.setRole(Role.PERSONAL);
         aluno.setPersonal(personal);
         plano.setAluno(aluno);
         dia.setPlano(plano);
@@ -53,6 +63,7 @@ class ItemTreinoServiceTest {
         assertEquals(4, item.getSeries());
         assertEquals(exercicio, item.getExercicio());
         assertEquals(dia, item.getDiaTreino());
+
         verify(itemRepository).save(any());
     }
 }

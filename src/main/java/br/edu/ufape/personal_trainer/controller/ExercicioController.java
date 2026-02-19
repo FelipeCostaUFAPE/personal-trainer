@@ -7,6 +7,7 @@ import br.edu.ufape.personal_trainer.service.ExercicioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class ExercicioController {
     private ExercicioService exercicioService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN','PERSONAL')")
     public ResponseEntity<List<ExercicioResponse>> listarTodos() {
         List<ExercicioResponse> responses = exercicioService.listarTodos()
         		.stream()
@@ -28,24 +30,28 @@ public class ExercicioController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','PERSONAL')")
     public ResponseEntity<ExercicioResponse> buscarId(@PathVariable Long id) {
         Exercicio exercicio = exercicioService.buscarId(id);
         return ResponseEntity.ok(new ExercicioResponse(exercicio));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ExercicioResponse> criar(@Valid @RequestBody ExercicioRequest request) {
         Exercicio exercicio = exercicioService.criar(request);
         return ResponseEntity.status(201).body(new ExercicioResponse(exercicio));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         exercicioService.deletar(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/grupoMuscular/{grupoMuscularId}")
+    @PreAuthorize("hasAnyRole('ADMIN','PERSONAL')")
     public ResponseEntity<List<ExercicioResponse>> buscarPorGrupoMuscular(@PathVariable Long grupoMuscularId) {
         List<ExercicioResponse> responses = exercicioService.buscarPorGrupoMuscular(grupoMuscularId)
         		.stream()
@@ -56,6 +62,7 @@ public class ExercicioController {
     }
 
     @GetMapping("/nome")
+    @PreAuthorize("hasAnyRole('ADMIN','PERSONAL')")
     public ResponseEntity<List<ExercicioResponse>> buscarPorNome(@RequestParam String nome) {
         List<ExercicioResponse> responses = exercicioService.buscarPorNome(nome)
         		.stream()

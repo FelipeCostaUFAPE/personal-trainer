@@ -1,17 +1,16 @@
 package br.edu.ufape.personal_trainer.integration;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 import java.time.LocalDate;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-
 import br.edu.ufape.personal_trainer.dto.ChatRequest;
 import br.edu.ufape.personal_trainer.dto.MensagemRequest;
+import br.edu.ufape.personal_trainer.enums.Role;
 import br.edu.ufape.personal_trainer.model.Aluno;
 import br.edu.ufape.personal_trainer.model.Chat;
 import br.edu.ufape.personal_trainer.model.Mensagem;
@@ -32,12 +31,14 @@ class MensagemIntegrationTest {
     @Autowired private PersonalRepository personalRepository;
 
     @Test
+    @WithMockUser(username = "personal@teste.com", roles = {"PERSONAL"})
     void permiteEnvioDeMensagensComTimestampEIdentificacao() {
         Personal personal = new Personal();
         personal.setNome("Personal Teste");
         personal.setEmail("personal@teste.com");
         personal.setSenha("123");
         personal.setCref("12345-UF");
+        personal.setRole(Role.PERSONAL);
         personal = personalRepository.save(personal);
 
         Aluno aluno = new Aluno();
@@ -48,6 +49,41 @@ class MensagemIntegrationTest {
         aluno.setModalidade("online");
         aluno.setObjetivo("definicao");
         aluno.setPersonal(personal);
+        aluno.setRole(Role.ALUNO);
+        aluno = alunoRepository.save(aluno);
+
+        Chat chat = chatService.criar(new ChatRequest(aluno.getUsuarioId(), personal.getUsuarioId()));
+
+        MensagemRequest reqPersonal = new MensagemRequest("Oi aluno!", false);
+        Mensagem msgPersonal = mensagemService.criar(reqPersonal, chat.getChatId());
+        assertFalse(msgPersonal.getEnviadoPeloAluno());
+        assertNotNull(msgPersonal.getTimeStamp());
+
+        var mensagens = mensagemService.buscarPorChatId(chat.getChatId());
+        assertEquals(1, mensagens.size());
+        assertNotNull(mensagens.get(0).getTimeStamp());
+    }
+
+    @Test
+    @WithMockUser(username = "mensagem@email.com", roles = {"ALUNO"})
+    void permiteEnvioDeMensagemPeloAluno() {
+        Personal personal = new Personal();
+        personal.setNome("Personal Teste");
+        personal.setEmail("personal@teste.com");
+        personal.setSenha("123");
+        personal.setCref("12345-UF");
+        personal.setRole(Role.PERSONAL);
+        personal = personalRepository.save(personal);
+
+        Aluno aluno = new Aluno();
+        aluno.setNome("Aluno Mensagem");
+        aluno.setEmail("mensagem@email.com");
+        aluno.setSenha("123");
+        aluno.setDataNascimento(LocalDate.of(1990, 1, 1));
+        aluno.setModalidade("online");
+        aluno.setObjetivo("definicao");
+        aluno.setPersonal(personal);
+        aluno.setRole(Role.ALUNO);
         aluno = alunoRepository.save(aluno);
 
         Chat chat = chatService.criar(new ChatRequest(aluno.getUsuarioId(), personal.getUsuarioId()));
@@ -57,13 +93,7 @@ class MensagemIntegrationTest {
         assertTrue(msgAluno.getEnviadoPeloAluno());
         assertNotNull(msgAluno.getTimeStamp());
 
-        MensagemRequest reqPersonal = new MensagemRequest("Oi aluno!", false);
-        Mensagem msgPersonal = mensagemService.criar(reqPersonal, chat.getChatId());
-        assertFalse(msgPersonal.getEnviadoPeloAluno());
-        assertNotNull(msgPersonal.getTimeStamp());
-
         var mensagens = mensagemService.buscarPorChatId(chat.getChatId());
-        assertEquals(2, mensagens.size());
-        assertTrue(mensagens.get(0).getTimeStamp().isBefore(mensagens.get(1).getTimeStamp()));
+        assertEquals(1, mensagens.size());
     }
 }

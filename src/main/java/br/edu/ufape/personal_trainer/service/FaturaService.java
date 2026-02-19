@@ -3,6 +3,8 @@ package br.edu.ufape.personal_trainer.service;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,15 +45,40 @@ public class FaturaService {
     // criar dto
     @Transactional
     public Fatura criar(FaturaRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new IllegalStateException("Usuário não autenticado");
+        }
+        
+        String usuarioLogado = auth.getName();
+
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        boolean isPersonal = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_PERSONAL"));
+
         Aluno aluno = alunoRepository.findById(request.alunoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado"));
 
         if (aluno.getPersonal() == null) {
-            throw new IllegalArgumentException("Aluno precisa estar vinculado a um personal");
+            throw new IllegalArgumentException("Aluno sem personal vinculado não pode ter fatura");
         }
 
-        if (faturaRepository.findByAluno_UsuarioIdAndStatus(aluno.getUsuarioId(), StatusFatura.PENDENTE).isPresent()) {
-            throw new IllegalStateException("Aluno já possui uma fatura pendente");
+        if (!isAdmin) {
+            if (isPersonal) {
+                if (!aluno.getPersonal().getEmail().equals(usuarioLogado)) {
+                    throw new IllegalArgumentException("Personal não pode criar fatura para aluno de outro personal");
+                }
+            } else {
+                throw new IllegalArgumentException("Apenas admin ou personal podem criar faturas");
+            }
+        }
+
+        if (faturaRepository
+                .findByAluno_UsuarioIdAndStatus(aluno.getUsuarioId(), StatusFatura.PENDENTE)
+                .isPresent()) {
+            throw new IllegalStateException("Aluno já possui fatura pendente");
         }
 
         Fatura fatura = new Fatura();
@@ -59,8 +86,10 @@ public class FaturaService {
         fatura.setValor(request.valor());
         fatura.setDataVencimento(request.dataVencimento());
         fatura.setStatus(StatusFatura.PENDENTE);
+
         return faturaRepository.save(fatura);
     }
+
 
     // deletar
     @Transactional
@@ -96,15 +125,41 @@ public class FaturaService {
 
     @Transactional
     public Fatura pagarFatura(Long faturaId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String usuarioLogado = auth.getName();
+
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        boolean isPersonal = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_PERSONAL"));
+
+        boolean isAluno = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ALUNO"));
+
         Fatura fatura = faturaRepository.findById(faturaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Fatura não encontrada"));
 
-        if (fatura.getStatus() != StatusFatura.PENDENTE) {
-            throw new IllegalStateException("Esta fatura já foi paga, cancelada ou está vencida");
+        if (!isAdmin) {
+            if (isPersonal) {
+                if (!fatura.getAluno().getPersonal().getEmail().equals(usuarioLogado)) {
+                    throw new IllegalArgumentException("Personal não pode pagar fatura de outro aluno");
+                }
+            }
+            if (isAluno) {
+                if (!fatura.getAluno().getEmail().equals(usuarioLogado)) {
+                    throw new IllegalArgumentException("Aluno não pode pagar fatura de outro aluno");
+                }
+            }
         }
-        
+
+        if (fatura.getStatus() != StatusFatura.PENDENTE) {
+            throw new IllegalStateException("Fatura não está pendente");
+        }
+
         fatura.setStatus(StatusFatura.PAGA);
         fatura.setDataPagamento(LocalDate.now());
+
         return faturaRepository.save(fatura);
     }
 

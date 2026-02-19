@@ -2,6 +2,8 @@ package br.edu.ufape.personal_trainer.service;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,8 +35,32 @@ public class AvaliacaoFisicaService {
     // criar dto
     @Transactional
     public AvaliacaoFisica criar(AvaliacaoFisicaRequest dto, Aluno aluno) {
-        if (aluno.getPersonal() == null) {
-            throw new IllegalArgumentException("Aluno precisa estar vinculado a um personal");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String usuarioLogado = auth.getName();
+        String modalidade = aluno.getModalidade() != null ? aluno.getModalidade().trim().toLowerCase() : "";
+
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        boolean isPersonal = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_PERSONAL"));
+
+        boolean isAluno = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ALUNO"));
+
+        if (!isAdmin) {
+            if (isPersonal) {
+                if (!"presencial".equals(modalidade) ||
+                    !aluno.getPersonal().getEmail().equals(usuarioLogado)) {
+                    throw new IllegalArgumentException("Personal não pode criar avaliação para esse aluno");
+                }
+            }
+            if (isAluno) {
+                if (!"online".equals(modalidade) ||
+                    !aluno.getEmail().equals(usuarioLogado)) {
+                    throw new IllegalArgumentException("Aluno não pode criar avaliação para outro aluno");
+                }
+            }
         }
 
         AvaliacaoFisica av = new AvaliacaoFisica();
@@ -44,8 +70,6 @@ public class AvaliacaoFisicaService {
         av.setAlturaCm(dto.alturaCm());
         av.setPercentualGordura(dto.percentualGordura());
         av.setObservacoes(dto.observacoes());
-
-        String modalidade = aluno.getModalidade() != null ? aluno.getModalidade().trim().toLowerCase() : "";
         av.setFeitoPeloPersonal("presencial".equals(modalidade));
 
         return avaliacaoFisicaRepository.save(av);
