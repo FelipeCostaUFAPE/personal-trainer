@@ -1,5 +1,6 @@
 package br.edu.ufape.personal_trainer.service;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import br.edu.ufape.personal_trainer.controller.advice.BusinessValidationExcepti
 import br.edu.ufape.personal_trainer.controller.advice.ResourceNotFoundException;
 import br.edu.ufape.personal_trainer.dto.AlunoRequest;
 import br.edu.ufape.personal_trainer.enums.Role;
+import br.edu.ufape.personal_trainer.enums.StatusFatura;
 import br.edu.ufape.personal_trainer.model.Aluno;
 import br.edu.ufape.personal_trainer.model.Personal;
 import br.edu.ufape.personal_trainer.repository.AlunoRepository;
@@ -70,12 +72,19 @@ public class AlunoService {
     @Transactional
     public void deletar(Long id) {
         Aluno aluno = buscarId(id);
+        
+        boolean temFaturaPendente = aluno.getFaturas().stream()
+                .anyMatch(f -> f.getStatus() == StatusFatura.PENDENTE || f.getStatus() == StatusFatura.VENCIDA);
 
-        if (!aluno.getFaturas().isEmpty()) {
-            throw new IllegalStateException("Aluno possui faturas — não pode ser deletado");
+        if (temFaturaPendente) {
+            throw new IllegalStateException("Aluno possui fatura(s) pendente(s) ou vencida(s) — não pode ser deletado");
         }
-        if (!aluno.getPlanos().isEmpty()) {
-            throw new IllegalStateException("Aluno possui planos de treino — não pode ser deletado");
+        
+        boolean temPlanoAtivo = aluno.getPlanos().stream()
+                .anyMatch(p -> p.getDataFim().isAfter(LocalDate.now()) || p.getDataFim().isEqual(LocalDate.now()));
+
+        if (temPlanoAtivo) {
+            throw new IllegalStateException("Aluno possui plano(s) de treino ativo(s) — não pode ser deletado");
         }
 
         alunoRepository.deleteById(id);

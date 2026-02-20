@@ -21,9 +21,9 @@ public class DiaTreinoController {
     private DiaTreinoService diaTreinoService;
 
     @GetMapping("/plano/{planoId}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<List<DiaTreino>> listarPorPlano(@PathVariable Long planoId) {
-        List<DiaTreino> dias = diaTreinoService.listarPorPlano(planoId);
+    @PreAuthorize("hasAnyRole('ADMIN','PERSONAL')")
+    public ResponseEntity<List<DiaTreinoResponse>> listarPorPlano(@PathVariable Long planoId) {
+        List<DiaTreinoResponse> dias = diaTreinoService.listarPorPlano(planoId);
         return ResponseEntity.ok(dias);
     }
 
@@ -35,16 +35,16 @@ public class DiaTreinoController {
     }
 
     @DeleteMapping("/{diaId}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PERSONAL')")
     public ResponseEntity<Void> removerDia(@PathVariable Long diaId) {
         diaTreinoService.removerDia(diaId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<DiaTreino> buscarPorId(@PathVariable Long id) {
-        DiaTreino dia = diaTreinoService.buscarPorId(id);
+    @PreAuthorize("hasAnyRole('ADMIN','PERSONAL')")
+    public ResponseEntity<DiaTreinoResponse> buscarPorId(@PathVariable Long id) {
+        DiaTreinoResponse dia = diaTreinoService.buscarPorId(id);
         return ResponseEntity.ok(dia);
     }
 }

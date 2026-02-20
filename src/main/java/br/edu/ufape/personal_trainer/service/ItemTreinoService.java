@@ -3,6 +3,8 @@ package br.edu.ufape.personal_trainer.service;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,7 +13,6 @@ import br.edu.ufape.personal_trainer.dto.ItemTreinoRequest;
 import br.edu.ufape.personal_trainer.model.DiaTreino;
 import br.edu.ufape.personal_trainer.model.Exercicio;
 import br.edu.ufape.personal_trainer.model.ItemTreino;
-import br.edu.ufape.personal_trainer.model.Usuario;
 import br.edu.ufape.personal_trainer.repository.DiaTreinoRepository;
 import br.edu.ufape.personal_trainer.repository.ExercicioRepository;
 import br.edu.ufape.personal_trainer.repository.ItemTreinoRepository;
@@ -27,9 +28,6 @@ public class ItemTreinoService {
 
     @Autowired
     private DiaTreinoRepository diaTreinoRepository;
-    
-    @Autowired
-    private AuthService authService;
 
     @Transactional(readOnly = true)
     public List<ItemTreino> listarTodos() {
@@ -44,27 +42,31 @@ public class ItemTreinoService {
 
     @Transactional
     public ItemTreino criar(ItemTreinoRequest request, Long diaId) {
-        Usuario usuarioLogado = authService.usuarioLogado();
-        DiaTreino dia = diaTreinoRepository.findById(diaId)
-                .orElseThrow(() -> 
-                        new ResourceNotFoundException("Dia de treino não encontrado"));
-
-        Exercicio exercicio = exercicioRepository.findById(request.exercicioId())
-                .orElseThrow(() -> 
-                        new ResourceNotFoundException("Exercício não encontrado"));
-
-        if (dia.getPlano().getAluno().getPersonal() == null) {
-            throw new IllegalArgumentException(
-                    "Plano pertence a aluno sem personal vinculado");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new IllegalStateException("Usuário não autenticado");
         }
 
-        if (usuarioLogado.getRole().name().equals("PERSONAL")) {
-            if (!dia.getPlano()
-                    .getAluno()
-                    .getPersonal()
-                    .getUsuarioId()
-                    .equals(usuarioLogado.getUsuarioId())) {
+        String emailLogado = auth.getName();
+        boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isPersonal = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PERSONAL"));
 
+        DiaTreino dia = diaTreinoRepository.findById(diaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Dia de treino não encontrado"));
+
+        Exercicio exercicio = exercicioRepository.findById(request.exercicioId())
+                .orElseThrow(() -> new ResourceNotFoundException("Exercício não encontrado"));
+
+        if (dia.getPlano().getAluno().getPersonal() == null) {
+            throw new IllegalArgumentException("Plano pertence a aluno sem personal vinculado");
+        }
+
+        if (!isAdmin && !isPersonal) {
+            throw new AccessDeniedException("Acesso negado");
+        }
+
+        if (isPersonal) {
+            if (!dia.getPlano().getAluno().getPersonal().getEmail().equals(emailLogado)) {
                 throw new AccessDeniedException("Você não pode adicionar item neste treino");
             }
         }
@@ -78,7 +80,6 @@ public class ItemTreinoService {
         itemTreino.setDescansoSegundos(request.descansoSegundos());
 
         itemTreino = itemTreinoRepository.save(itemTreino);
-
         dia.getItens().add(itemTreino);
         diaTreinoRepository.save(dia);
 
@@ -87,14 +88,28 @@ public class ItemTreinoService {
 
     @Transactional
     public void deletar(Long id) {
-        if (!itemTreinoRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Não existe item treino com ID: " + id);
-        }
-        itemTreinoRepository.deleteById(id);
-    }
+        ItemTreino item = itemTreinoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Não existe item treino com ID: " + id));
 
-    @Transactional(readOnly = true)
-    public List<ItemTreino> buscarPorExercicioId(Long id) {
-        return itemTreinoRepository.findByExercicio_ExercicioId(id);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new IllegalStateException("Usuário não autenticado");
+        }
+
+        String emailLogado = auth.getName();
+        boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        boolean isPersonal = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PERSONAL"));
+
+        if (!isAdmin && !isPersonal) {
+            throw new AccessDeniedException("Acesso negado");
+        }
+
+        if (isPersonal) {
+            if (!item.getDiaTreino().getPlano().getAluno().getPersonal().getEmail().equals(emailLogado)) {
+                throw new AccessDeniedException("Acesso negado");
+            }
+        }
+
+        itemTreinoRepository.deleteById(id);
     }
 }

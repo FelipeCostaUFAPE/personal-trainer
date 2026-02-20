@@ -30,7 +30,7 @@ public class FaturaController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','PERSONAL','ALUNO')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<FaturaResponse> buscarId(@PathVariable Long id) {
         Fatura fatura = faturaService.buscarId(id);
         return ResponseEntity.ok(new FaturaResponse(fatura));
@@ -54,7 +54,7 @@ public class FaturaController {
     @PreAuthorize("hasAnyRole('ADMIN','PERSONAL','ALUNO')")
     public ResponseEntity<List<FaturaResponse>> buscarPorAlunoId(@PathVariable Long alunoId) {
         List<FaturaResponse> responses = faturaService.buscarPorAlunoId(alunoId)
-        		.stream()
+                .stream()
                 .map(FaturaResponse::new)
                 .toList();
         

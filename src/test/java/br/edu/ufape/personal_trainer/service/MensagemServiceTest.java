@@ -31,6 +31,10 @@ class MensagemServiceTest {
     void permiteCriarMensagem() {
         Authentication auth = mock(Authentication.class);
         when(auth.getName()).thenReturn("aluno@email.com");
+        when(auth.isAuthenticated()).thenReturn(true);
+        doReturn(java.util.Collections.singleton(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_ALUNO")))
+            .when(auth).getAuthorities();
+
         SecurityContext context = mock(SecurityContext.class);
         when(context.getAuthentication()).thenReturn(auth);
         SecurityContextHolder.setContext(context);
@@ -47,7 +51,7 @@ class MensagemServiceTest {
         when(chatRepository.findById(1L)).thenReturn(Optional.of(chat));
         when(mensagemRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        MensagemRequest request = new MensagemRequest("Olá, tudo bem?", true);
+        MensagemRequest request = new MensagemRequest("Olá, tudo bem?");
 
         Mensagem mensagem = mensagemService.criar(request, 1L);
 

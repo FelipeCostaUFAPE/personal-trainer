@@ -29,7 +29,7 @@ public class ChatController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','PERSONAL','ALUNO')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ChatResponse> buscarId(@PathVariable Long id) {
         Chat chat = chatService.buscarId(id);
         return ResponseEntity.ok(new ChatResponse(chat));

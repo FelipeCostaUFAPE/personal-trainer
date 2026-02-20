@@ -31,6 +31,8 @@ class ChatServiceTest {
     void naoPermiteChatComPersonalDiferenteDoVinculado() {
         Authentication auth = mock(Authentication.class);
         when(auth.getName()).thenReturn("aluno@email.com");
+        when(auth.isAuthenticated()).thenReturn(true);
+
         SecurityContext context = mock(SecurityContext.class);
         when(context.getAuthentication()).thenReturn(auth);
         SecurityContextHolder.setContext(context);

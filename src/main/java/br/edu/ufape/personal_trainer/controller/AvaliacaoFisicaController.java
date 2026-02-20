@@ -35,7 +35,7 @@ public class AvaliacaoFisicaController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','PERSONAL','ALUNO')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<AvaliacaoFisicaResponse> buscarId(@PathVariable Long id) {
         AvaliacaoFisica av = avaliacaoFisicaService.buscarId(id);
         return ResponseEntity.ok(new AvaliacaoFisicaResponse(av));

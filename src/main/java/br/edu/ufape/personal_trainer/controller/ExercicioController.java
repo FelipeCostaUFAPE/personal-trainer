@@ -37,7 +37,7 @@ public class ExercicioController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PERSONAL')")
     public ResponseEntity<ExercicioResponse> criar(@Valid @RequestBody ExercicioRequest request) {
         Exercicio exercicio = exercicioService.criar(request);
         return ResponseEntity.status(201).body(new ExercicioResponse(exercicio));

@@ -49,15 +49,4 @@ public class ItemTreinoController {
         itemTreinoService.deletar(id);
         return ResponseEntity.noContent().build();
     }
-
-    @GetMapping("/exercicio/{exercicioId}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<List<ItemTreinoResponse>> buscarPorExercicioId(@PathVariable Long exercicioId) {
-        List<ItemTreinoResponse> responses = itemTreinoService.buscarPorExercicioId(exercicioId)
-        		.stream()
-                .map(ItemTreinoResponse::new)
-                .toList();
-        
-        return ResponseEntity.ok(responses);
-    }
 }

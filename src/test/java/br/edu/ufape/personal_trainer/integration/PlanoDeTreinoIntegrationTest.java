@@ -10,6 +10,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.edu.ufape.personal_trainer.dto.DiaTreinoRequest;
+import br.edu.ufape.personal_trainer.dto.DiaTreinoResponse;
 import br.edu.ufape.personal_trainer.dto.ItemTreinoRequest;
 import br.edu.ufape.personal_trainer.dto.PlanoDeTreinoRequest;
 import br.edu.ufape.personal_trainer.enums.DiaSemana;
@@ -87,7 +88,7 @@ class PlanoItemIntegrationTest {
         );
         itemService.criar(itemReq2, dia.getId());
 
-        DiaTreino diaAtualizado = diaTreinoService.buscarPorId(dia.getId());
-        assertEquals(2, diaAtualizado.getItens().size(), "Deve permitir itens duplicados no mesmo dia");
+        DiaTreinoResponse diaAtualizado = diaTreinoService.buscarPorId(dia.getId());
+        assertEquals(2, diaAtualizado.itens().size(), "Deve permitir itens duplicados no mesmo dia");
     }
 }

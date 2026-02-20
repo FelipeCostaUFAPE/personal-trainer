@@ -51,7 +51,7 @@ public class MensagemController {
     }
 
     @GetMapping("/chat/{chatId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PERSONAL','ALUNO')")
     public ResponseEntity<List<MensagemResponse>> buscarPorChatId(@PathVariable Long chatId) {
         List<MensagemResponse> responses = mensagemService.buscarPorChatId(chatId)
         		.stream()

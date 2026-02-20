@@ -1,5 +1,6 @@
 package br.edu.ufape.personal_trainer.controller;
 
+import br.edu.ufape.personal_trainer.dto.PlanoDeTreinoCompletoResponse;
 import br.edu.ufape.personal_trainer.dto.PlanoDeTreinoRequest;
 import br.edu.ufape.personal_trainer.dto.PlanoDeTreinoResponse;
 import br.edu.ufape.personal_trainer.model.PlanoDeTreino;
@@ -53,11 +54,18 @@ public class PlanoDeTreinoController {
     @GetMapping("/aluno/{alunoId}")
     @PreAuthorize("hasAnyRole('ADMIN','PERSONAL','ALUNO')")
     public ResponseEntity<List<PlanoDeTreinoResponse>> buscarPorAlunoId(@PathVariable Long alunoId) {
-        List<PlanoDeTreinoResponse> responses = planoService.buscarPorAlunoId(alunoId)
-        		.stream()
+        List<PlanoDeTreinoResponse> responses = planoService.buscarPlanos(alunoId)
+                .stream()
                 .map(PlanoDeTreinoResponse::new)
                 .toList();
         
         return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/{planoId}/completo")
+    @PreAuthorize("hasAnyRole('ADMIN','PERSONAL','ALUNO')")
+    public ResponseEntity<PlanoDeTreinoCompletoResponse> buscarPlanoCompleto(@PathVariable Long planoId) {
+        PlanoDeTreinoCompletoResponse response = planoService.buscarPlanoCompleto(planoId);
+        return ResponseEntity.ok(response);
     }
 }

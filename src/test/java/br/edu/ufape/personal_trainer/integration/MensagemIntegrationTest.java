@@ -54,7 +54,7 @@ class MensagemIntegrationTest {
 
         Chat chat = chatService.criar(new ChatRequest(aluno.getUsuarioId(), personal.getUsuarioId()));
 
-        MensagemRequest reqPersonal = new MensagemRequest("Oi aluno!", false);
+        MensagemRequest reqPersonal = new MensagemRequest("Oi aluno!");
         Mensagem msgPersonal = mensagemService.criar(reqPersonal, chat.getChatId());
         assertFalse(msgPersonal.getEnviadoPeloAluno());
         assertNotNull(msgPersonal.getTimeStamp());
@@ -88,7 +88,7 @@ class MensagemIntegrationTest {
 
         Chat chat = chatService.criar(new ChatRequest(aluno.getUsuarioId(), personal.getUsuarioId()));
 
-        MensagemRequest reqAluno = new MensagemRequest("Oi personal!", true);
+        MensagemRequest reqAluno = new MensagemRequest("Oi personal!");
         Mensagem msgAluno = mensagemService.criar(reqAluno, chat.getChatId());
         assertTrue(msgAluno.getEnviadoPeloAluno());
         assertNotNull(msgAluno.getTimeStamp());
