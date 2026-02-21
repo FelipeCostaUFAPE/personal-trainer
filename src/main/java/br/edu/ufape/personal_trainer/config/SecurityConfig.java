@@ -14,16 +14,23 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import br.edu.ufape.personal_trainer.controller.advice.AccessDeniedHandlerJwt;
+import br.edu.ufape.personal_trainer.controller.advice.AuthEntryPointJwt;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final AccessDeniedHandlerJwt accessDeniedHandler;
+    private final AuthEntryPointJwt unauthorizedHandler;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
-        this.jwtAuthFilter = jwtAuthFilter;
-    }
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, AuthEntryPointJwt unauthorizedHandler, AccessDeniedHandlerJwt accessDeniedHandler) {
+			this.jwtAuthFilter = jwtAuthFilter;
+			this.unauthorizedHandler = unauthorizedHandler;
+			this.accessDeniedHandler = accessDeniedHandler;
+}
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -39,6 +46,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint(unauthorizedHandler)
+                .accessDeniedHandler(accessDeniedHandler)
+            )
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
@@ -49,7 +60,6 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 }
