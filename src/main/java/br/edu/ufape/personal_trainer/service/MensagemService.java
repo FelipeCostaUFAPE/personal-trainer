@@ -26,11 +26,6 @@ public class MensagemService {
     private ChatRepository chatRepository;
 
     @Transactional(readOnly = true)
-    public List<Mensagem> listarTodos() {
-        return mensagemRepository.findAll();
-    }
-
-    @Transactional(readOnly = true)
     public Mensagem buscarId(Long id) {
         return mensagemRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Não existe mensagem com ID: " + id));

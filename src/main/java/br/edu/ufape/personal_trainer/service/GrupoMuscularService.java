@@ -17,20 +17,17 @@ public class GrupoMuscularService {
     @Autowired
     private GrupoMuscularRepository grupoMuscularRepository;
 
-    // listar todos
     @Transactional(readOnly = true)
     public List<GrupoMuscular> listarTodos() {
         return grupoMuscularRepository.findAll();
     }
 
-    // buscar id
     @Transactional(readOnly = true)
     public GrupoMuscular buscarId(Long id) {
         return grupoMuscularRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Não existe grupo muscular com ID: " + id));
     }
 
-    // criar
     @Transactional
     public GrupoMuscular criar(GrupoMuscular grupoMuscular) {
         if (grupoMuscular.getNome() == null || grupoMuscular.getNome().trim().isEmpty()) {
@@ -49,7 +46,6 @@ public class GrupoMuscularService {
         return grupoMuscularRepository.save(grupoMuscular);
     }
 
-    // deletar
     @Transactional
     public void deletar(Long id) {
         if (!grupoMuscularRepository.existsById(id)) {
@@ -58,7 +54,6 @@ public class GrupoMuscularService {
         grupoMuscularRepository.deleteById(id);
     }
 
-    // metodos personalizados
     @Transactional(readOnly = true)
     public GrupoMuscular buscarPorNome(String nome) {
         return grupoMuscularRepository.findByNome(nome)

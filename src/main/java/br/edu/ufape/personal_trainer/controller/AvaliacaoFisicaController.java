@@ -23,17 +23,6 @@ public class AvaliacaoFisicaController {
     @Autowired
     private AlunoService alunoService;
 
-    @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<AvaliacaoFisicaResponse>> listarTodos() {
-        List<AvaliacaoFisicaResponse> responses = avaliacaoFisicaService.listarTodos()
-        		.stream()
-                .map(AvaliacaoFisicaResponse::new)
-                .toList();
-        
-        return ResponseEntity.ok(responses);
-    }
-
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<AvaliacaoFisicaResponse> buscarId(@PathVariable Long id) {

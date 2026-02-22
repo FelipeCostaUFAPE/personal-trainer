@@ -1,6 +1,5 @@
 package br.edu.ufape.personal_trainer.controller;
 
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,17 +15,6 @@ import jakarta.validation.Valid;
 public class ChatController {
 
     @Autowired private ChatService chatService;
-
-    @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<ChatResponse>> listarTodos() {
-        List<ChatResponse> responses = chatService.listarTodos()
-        		.stream()
-                .map(ChatResponse::new)
-                .toList();
-        
-        return ResponseEntity.ok(responses);
-    }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")

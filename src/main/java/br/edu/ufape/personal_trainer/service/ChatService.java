@@ -1,6 +1,5 @@
 package br.edu.ufape.personal_trainer.service;
 
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -27,12 +26,7 @@ public class ChatService {
     
     @Autowired 
     private PersonalRepository personalRepository;
-
-    @Transactional(readOnly = true)
-    public List<Chat> listarTodos() {
-        return chatRepository.findAll();
-    }
-
+    
     @Transactional(readOnly = true)
     public Chat buscarId(Long id) {
         return chatRepository.findById(id)

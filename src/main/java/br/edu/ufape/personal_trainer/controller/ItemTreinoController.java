@@ -1,6 +1,5 @@
 package br.edu.ufape.personal_trainer.controller;
 
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,17 +16,6 @@ public class ItemTreinoController {
 
     @Autowired
     private ItemTreinoService itemTreinoService;
-
-    @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<List<ItemTreinoResponse>> listarTodos() {
-        List<ItemTreinoResponse> responses = itemTreinoService.listarTodos()
-        		.stream()
-                .map(ItemTreinoResponse::new)
-                .toList();
-        
-        return ResponseEntity.ok(responses);
-    }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")

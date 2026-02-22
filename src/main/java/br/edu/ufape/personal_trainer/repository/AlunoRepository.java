@@ -13,13 +13,7 @@ import br.edu.ufape.personal_trainer.model.Aluno;
 @Repository
 public interface AlunoRepository extends JpaRepository<Aluno, Long>{
 	
-	List<Aluno> findByModalidade(String modalidade);
-	
-	List<Aluno> findByAtivoTrue();
-	
 	Optional<Aluno> findByEmail(String email);
-	
-	List<Aluno> findByNome(String nome);
 	
 	@Query("SELECT a FROM Aluno a WHERE a.personal.usuarioId = :personalId")
 	List<Aluno> findAlunosByPersonalId(@Param("personalId") Long personalId);

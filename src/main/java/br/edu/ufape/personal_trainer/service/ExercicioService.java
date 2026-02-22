@@ -23,20 +23,17 @@ public class ExercicioService {
     @Autowired
     private GrupoMuscularRepository grupoMuscularRepository;
 
-    // listar todos
     @Transactional(readOnly = true)
     public List<Exercicio> listarTodos() {
         return exercicioRepository.findAll();
     }
 
-    // buscar id
     @Transactional(readOnly = true)
     public Exercicio buscarId(Long id) {
         return exercicioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Não existe exercício com ID: " + id));
     }
 
-    // criar dto
     @Transactional
     public Exercicio criar(ExercicioRequest request) {
         Map<String, String> erros = new HashMap<>();
@@ -59,7 +56,6 @@ public class ExercicioService {
         return exercicioRepository.save(exercicio);
     }
 
-    // deletar
     @Transactional
     public void deletar(Long id) {
         if (!exercicioRepository.existsById(id)) {
@@ -68,7 +64,6 @@ public class ExercicioService {
         exercicioRepository.deleteById(id);
     }
 
-    // metodos personalizados
     @Transactional(readOnly = true)
     public List<Exercicio> buscarPorGrupoMuscular(Long grupoMuscularId) {
         return exercicioRepository.findByGrupoMuscular_GrupoMuscularId(grupoMuscularId);

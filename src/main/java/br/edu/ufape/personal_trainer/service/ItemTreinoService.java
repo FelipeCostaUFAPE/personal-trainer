@@ -1,6 +1,5 @@
 package br.edu.ufape.personal_trainer.service;
 
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -28,11 +27,6 @@ public class ItemTreinoService {
 
     @Autowired
     private DiaTreinoRepository diaTreinoRepository;
-
-    @Transactional(readOnly = true)
-    public List<ItemTreino> listarTodos() {
-        return itemTreinoRepository.findAll();
-    }
 
     @Transactional(readOnly = true)
     public ItemTreino buscarId(Long id) {

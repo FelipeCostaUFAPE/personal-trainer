@@ -51,28 +51,6 @@ public class AlunoController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/modalidade")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<AlunoResponse>> listarPorModalidade(@RequestParam String modalidade) {
-        List<AlunoResponse> responses = alunoService.listarPorModalidade(modalidade)
-        		.stream()
-                .map(AlunoResponse::new)
-                .toList();
-        
-        return ResponseEntity.ok(responses);
-    }
-
-    @GetMapping("/ativos")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<AlunoResponse>> listarPorAtivo() {
-        List<AlunoResponse> responses = alunoService.listarPorAtivo()
-        		.stream()
-                .map(AlunoResponse::new)
-                .toList();
-        
-        return ResponseEntity.ok(responses);
-    }
-
     @GetMapping("/email")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AlunoResponse> buscarEmail(@RequestParam String email) {

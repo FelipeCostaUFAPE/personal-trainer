@@ -61,17 +61,6 @@ public class FaturaController {
         return ResponseEntity.ok(responses);
     }
 
-    @GetMapping("/status")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<FaturaResponse>> buscarPorStatus(@RequestParam String status) {
-        List<FaturaResponse> responses = faturaService.buscarPorStatus(status)
-        		.stream()
-                .map(FaturaResponse::new)
-                .toList();
-        
-        return ResponseEntity.ok(responses);
-    }
-
     @PatchMapping("/{id}/pagar")
     @PreAuthorize("hasAnyRole('ADMIN','PERSONAL','ALUNO')")
     public ResponseEntity<FaturaResponse> pagarFatura(@PathVariable Long id) {

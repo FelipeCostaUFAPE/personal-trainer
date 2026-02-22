@@ -19,17 +19,6 @@ public class PlanoDeTreinoController {
     @Autowired
     private PlanoDeTreinoService planoService;
 
-    @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<PlanoDeTreinoResponse>> listarTodos() {
-        List<PlanoDeTreinoResponse> responses = planoService.listarTodos()
-        		.stream()
-                .map(PlanoDeTreinoResponse::new)
-                .toList();
-        
-        return ResponseEntity.ok(responses);
-    }
-
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PlanoDeTreinoResponse> buscarId(@PathVariable Long id) {

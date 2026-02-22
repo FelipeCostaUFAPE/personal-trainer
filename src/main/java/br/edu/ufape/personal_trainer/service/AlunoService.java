@@ -30,20 +30,17 @@ public class AlunoService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // listar todos
     @Transactional(readOnly = true)
     public List<Aluno> listarTodos() {
         return alunoRepository.findAll();
     }
 
-    // buscar id
     @Transactional(readOnly = true)
     public Aluno buscarId(Long id) {
         return alunoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Não existe um aluno com ID: " + id));
     }
 
-    // criar dto
     @Transactional
     public Aluno criar(AlunoRequest request) {
         Map<String, String> erros = new HashMap<>();
@@ -68,7 +65,6 @@ public class AlunoService {
         return alunoRepository.save(aluno);
     }
 
-    // deletar
     @Transactional
     public void deletar(Long id) {
         Aluno aluno = buscarId(id);
@@ -88,17 +84,6 @@ public class AlunoService {
         }
 
         alunoRepository.deleteById(id);
-    }
-
-    // metodos personalizados
-    @Transactional(readOnly = true)
-    public List<Aluno> listarPorModalidade(String modalidade) {
-        return alunoRepository.findByModalidade(modalidade);
-    }
-
-    @Transactional(readOnly = true)
-    public List<Aluno> listarPorAtivo() {
-        return alunoRepository.findByAtivoTrue();
     }
 
     @Transactional(readOnly = true)

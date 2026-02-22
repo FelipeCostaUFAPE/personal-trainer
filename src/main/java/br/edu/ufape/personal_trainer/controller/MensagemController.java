@@ -18,17 +18,6 @@ public class MensagemController {
     @Autowired
     private MensagemService mensagemService;
 
-    @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<MensagemResponse>> listarTodos() {
-        List<MensagemResponse> responses = mensagemService.listarTodos()
-        		.stream()
-                .map(MensagemResponse::new)
-                .toList();
-        
-        return ResponseEntity.ok(responses);
-    }
-
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MensagemResponse> buscarId(@PathVariable Long id) {

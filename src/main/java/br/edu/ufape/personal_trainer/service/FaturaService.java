@@ -26,7 +26,6 @@ public class FaturaService {
     @Autowired
     private AlunoRepository alunoRepository;
 
-    // listar todos
     @Transactional(readOnly = true)
     public List<Fatura> listarTodos() {
         List<Fatura> faturas = faturaRepository.findAll();
@@ -34,7 +33,6 @@ public class FaturaService {
         return faturas;
     }
 
-    // buscar id
     @Transactional(readOnly = true)
     public Fatura buscarId(Long id) {
         Fatura fatura = faturaRepository.findById(id)
@@ -43,7 +41,6 @@ public class FaturaService {
         return fatura;
     }
 
-    // criar dto
     @Transactional
     public Fatura criar(FaturaRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -91,8 +88,6 @@ public class FaturaService {
         return faturaRepository.save(fatura);
     }
 
-
-    // deletar
     @Transactional
     public void deletar(Long id) {
         if (!faturaRepository.existsById(id)) {
@@ -101,7 +96,6 @@ public class FaturaService {
         faturaRepository.deleteById(id);
     }
 
-    // metodos personalizados
     @Transactional(readOnly = true)
     public List<Fatura> buscarPorAlunoId(Long alunoId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -145,13 +139,6 @@ public class FaturaService {
         }
 
         throw new AccessDeniedException("Acesso negado");
-    }
-
-    @Transactional(readOnly = true)
-    public List<Fatura> buscarPorStatus(String status) {
-        List<Fatura> faturas = faturaRepository.findByStatus(status);
-        faturas.forEach(this::verificarVencimento);
-        return faturas;
     }
 
     @Transactional

@@ -24,20 +24,12 @@ public class AvaliacaoFisicaService {
     @Autowired
     private AlunoRepository alunoRepository;
 
-    // listar todos
-    @Transactional(readOnly = true)
-    public List<AvaliacaoFisica> listarTodos() {
-        return avaliacaoFisicaRepository.findAll();
-    }
-
-    // buscar id
     @Transactional(readOnly = true)
     public AvaliacaoFisica buscarId(Long id) {
         return avaliacaoFisicaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Não existe uma Avaliação Física com o ID: " + id));
     }
 
-    // criar dto
     @Transactional
     public AvaliacaoFisica criar(AvaliacaoFisicaRequest dto, Aluno aluno) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -84,7 +76,6 @@ public class AvaliacaoFisicaService {
         return avaliacaoFisicaRepository.save(av);
     }
 
-    // deletar
     @Transactional
     public void deletar(Long id) {
         if (!avaliacaoFisicaRepository.existsById(id)) {
@@ -93,7 +84,6 @@ public class AvaliacaoFisicaService {
         avaliacaoFisicaRepository.deleteById(id);
     }
 
-    // metodos personalizados
     @Transactional(readOnly = true)
     public List<AvaliacaoFisica> encontrarPorIdAluno(Long alunoId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

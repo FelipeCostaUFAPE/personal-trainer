@@ -27,11 +27,6 @@ public class PlanoDeTreinoService {
     private AlunoService alunoService;
 
     @Transactional(readOnly = true)
-    public List<PlanoDeTreino> listarTodos() {
-        return planoDeTreinoRepository.findAll();
-    }
-
-    @Transactional(readOnly = true)
     public PlanoDeTreino buscarId(Long id) {
         return planoDeTreinoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Plano de treino não encontrado com ID: " + id));
