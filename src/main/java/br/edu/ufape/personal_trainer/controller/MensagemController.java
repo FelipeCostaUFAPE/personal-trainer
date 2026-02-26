@@ -15,8 +15,7 @@ import java.util.List;
 @RequestMapping("/api/mensagens")
 public class MensagemController {
 
-    @Autowired
-    private MensagemService mensagemService;
+    @Autowired private MensagemService mensagemService;
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -43,10 +42,9 @@ public class MensagemController {
     @PreAuthorize("hasAnyRole('ADMIN','PERSONAL','ALUNO')")
     public ResponseEntity<List<MensagemResponse>> buscarPorChatId(@PathVariable Long chatId) {
         List<MensagemResponse> responses = mensagemService.buscarPorChatId(chatId)
-        		.stream()
+                .stream()
                 .map(MensagemResponse::new)
                 .toList();
-        
         return ResponseEntity.ok(responses);
     }
 }

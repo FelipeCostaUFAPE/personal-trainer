@@ -24,7 +24,7 @@ public class AvaliacaoFisicaController {
     private AlunoService alunoService;
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AvaliacaoFisicaResponse> buscarId(@PathVariable Long id) {
         AvaliacaoFisica av = avaliacaoFisicaService.buscarId(id);
         return ResponseEntity.ok(new AvaliacaoFisicaResponse(av));
@@ -49,10 +49,9 @@ public class AvaliacaoFisicaController {
     @PreAuthorize("hasAnyRole('ADMIN','PERSONAL','ALUNO')")
     public ResponseEntity<List<AvaliacaoFisicaResponse>> encontrarPorIdAluno(@PathVariable Long alunoId) {
         List<AvaliacaoFisicaResponse> responses = avaliacaoFisicaService.encontrarPorIdAluno(alunoId)
-        		.stream()
+                .stream()
                 .map(AvaliacaoFisicaResponse::new)
                 .toList();
-        
         return ResponseEntity.ok(responses);
     }
 }

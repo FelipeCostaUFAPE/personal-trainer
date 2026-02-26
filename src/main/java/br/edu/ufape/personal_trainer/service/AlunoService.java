@@ -17,26 +17,24 @@ import br.edu.ufape.personal_trainer.model.Aluno;
 import br.edu.ufape.personal_trainer.model.Personal;
 import br.edu.ufape.personal_trainer.repository.AlunoRepository;
 import br.edu.ufape.personal_trainer.repository.PersonalRepository;
+import br.edu.ufape.personal_trainer.config.SecurityUtil;
 
 @Service
 public class AlunoService {
 
-    @Autowired
-    private AlunoRepository alunoRepository;
-
-    @Autowired
-    private PersonalRepository personalRepository;
-    
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @Autowired private AlunoRepository alunoRepository;
+    @Autowired private PersonalRepository personalRepository;
+    @Autowired private PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public List<Aluno> listarTodos() {
+        SecurityUtil.requireAuthenticated();
         return alunoRepository.findAll();
     }
 
     @Transactional(readOnly = true)
     public Aluno buscarId(Long id) {
+        SecurityUtil.requireAuthenticated();
         return alunoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Não existe um aluno com ID: " + id));
     }
@@ -44,15 +42,12 @@ public class AlunoService {
     @Transactional
     public Aluno criar(AlunoRequest request) {
         Map<String, String> erros = new HashMap<>();
-
         if (alunoRepository.findByEmail(request.email()).isPresent()) {
             erros.put("email", "Email já cadastrado");
         }
-
         if (!erros.isEmpty()) {
             throw new BusinessValidationException(erros);
         }
-
         Aluno aluno = new Aluno();
         aluno.setNome(request.nome());
         aluno.setEmail(request.email());
@@ -67,18 +62,17 @@ public class AlunoService {
 
     @Transactional
     public void deletar(Long id) {
+        SecurityUtil.requireAuthenticated();
         Aluno aluno = buscarId(id);
-        
+
         boolean temFaturaPendente = aluno.getFaturas().stream()
                 .anyMatch(f -> f.getStatus() == StatusFatura.PENDENTE || f.getStatus() == StatusFatura.VENCIDA);
-
         if (temFaturaPendente) {
             throw new IllegalStateException("Aluno possui fatura(s) pendente(s) ou vencida(s) — não pode ser deletado");
         }
-        
+
         boolean temPlanoAtivo = aluno.getPlanos().stream()
                 .anyMatch(p -> p.getDataFim().isAfter(LocalDate.now()) || p.getDataFim().isEqual(LocalDate.now()));
-
         if (temPlanoAtivo) {
             throw new IllegalStateException("Aluno possui plano(s) de treino ativo(s) — não pode ser deletado");
         }
@@ -88,29 +82,22 @@ public class AlunoService {
 
     @Transactional(readOnly = true)
     public Aluno buscarEmail(String email) {
+        SecurityUtil.requireAuthenticated();
         return alunoRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado com email: " + email));
     }
 
     @Transactional
-    public void vincularPersonal(Long alunoId, Long personalId,  String emailLogado, boolean isAdmin) {
+    public void vincularPersonal(Long alunoId, Long personalId) {
+        SecurityUtil.requireAuthenticated();
         Aluno aluno = buscarId(alunoId);
-
         if (aluno.getPersonal() != null) {
             throw new IllegalArgumentException("Aluno já está vinculado a um personal");
         }
-
         Personal personal = personalRepository.findById(personalId)
                 .orElseThrow(() -> new ResourceNotFoundException("Personal não encontrado"));
 
-        if (!isAdmin) {
-            Personal personalLogado = personalRepository.findByEmail(emailLogado)
-                    .orElseThrow(() -> new ResourceNotFoundException("Personal logado não encontrado"));
-
-            if (!personalLogado.getUsuarioId().equals(personalId)) {
-                throw new IllegalStateException("Você só pode vincular aluno a você mesmo");
-            }
-        }
+        SecurityUtil.requireAdminOrSpecificPersonal(personal.getEmail(), "Você só pode vincular aluno a você mesmo");
 
         aluno.setPersonal(personal);
         aluno.setAtivo(true);
@@ -118,29 +105,23 @@ public class AlunoService {
     }
 
     @Transactional
-    public void desvincularPersonal(Long alunoId, String emailLogado, boolean isAdmin) {
+    public void desvincularPersonal(Long alunoId) {
+        SecurityUtil.requireAuthenticated();
         Aluno aluno = buscarId(alunoId);
-
         if (aluno.getPersonal() == null) {
             throw new IllegalArgumentException("Aluno não está vinculado a um personal");
         }
 
-        if (!isAdmin) {
-            Personal personalLogado = personalRepository.findByEmail(emailLogado)
-                    .orElseThrow(() -> new ResourceNotFoundException("Personal logado não encontrado"));
-
-            if (!aluno.getPersonal().getUsuarioId().equals(personalLogado.getUsuarioId())) {
-                throw new IllegalStateException("Você só pode desvincular alunos vinculados a você");
-            }
-        }
+        SecurityUtil.requirePersonalOfAlunoOrAdmin(aluno, "Você só pode desvincular alunos vinculados a você");
 
         aluno.setPersonal(null);
         aluno.setAtivo(false);
         alunoRepository.save(aluno);
     }
-    
+
     @Transactional(readOnly = true)
     public List<Aluno> listarAlunosPersonal(Long personalId) {
+        SecurityUtil.requireAuthenticated();
         return alunoRepository.findAlunosByPersonalId(personalId);
     }
 }

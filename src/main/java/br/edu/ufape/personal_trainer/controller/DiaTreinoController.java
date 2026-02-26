@@ -5,20 +5,17 @@ import br.edu.ufape.personal_trainer.dto.DiaTreinoResponse;
 import br.edu.ufape.personal_trainer.model.DiaTreino;
 import br.edu.ufape.personal_trainer.service.DiaTreinoService;
 import jakarta.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/dias")
 public class DiaTreinoController {
 
-    @Autowired
-    private DiaTreinoService diaTreinoService;
+    @Autowired private DiaTreinoService diaTreinoService;
 
     @GetMapping("/plano/{planoId}")
     @PreAuthorize("hasAnyRole('ADMIN','PERSONAL')")

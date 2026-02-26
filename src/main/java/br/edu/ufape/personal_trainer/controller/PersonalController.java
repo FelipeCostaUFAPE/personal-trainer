@@ -19,20 +19,16 @@ import java.util.List;
 @RequestMapping("/api/personais")
 public class PersonalController {
 
-    @Autowired
-    private PersonalService personalService;
-    
-    @Autowired
-    private AlunoService alunoService;
+    @Autowired private PersonalService personalService;
+    @Autowired private AlunoService alunoService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<PersonalResponse>> listarTodos() {
         List<PersonalResponse> responses = personalService.listarTodos()
-        		.stream()
+                .stream()
                 .map(PersonalResponse::new)
                 .toList();
-        
         return ResponseEntity.ok(responses);
     }
 
@@ -70,7 +66,7 @@ public class PersonalController {
         Personal personal = personalService.buscarPorEmail(email);
         return ResponseEntity.ok(new PersonalResponse(personal));
     }
-    
+
     @GetMapping("/me/alunos")
     @PreAuthorize("hasRole('PERSONAL')")
     public ResponseEntity<List<AlunoResponse>> listarMeusAlunos(Authentication authentication) {
@@ -80,7 +76,6 @@ public class PersonalController {
         List<AlunoResponse> responses = alunos.stream()
                 .map(AlunoResponse::new)
                 .toList();
-        
         return ResponseEntity.ok(responses);
     }
 }

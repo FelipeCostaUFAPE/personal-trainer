@@ -14,11 +14,10 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/itens")
 public class ItemTreinoController {
 
-    @Autowired
-    private ItemTreinoService itemTreinoService;
+    @Autowired private ItemTreinoService itemTreinoService;
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ItemTreinoResponse> buscarId(@PathVariable Long id) {
         ItemTreino itemTreino = itemTreinoService.buscarId(id);
         return ResponseEntity.ok(new ItemTreinoResponse(itemTreino));

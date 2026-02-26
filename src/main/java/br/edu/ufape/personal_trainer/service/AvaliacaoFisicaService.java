@@ -3,66 +3,49 @@ package br.edu.ufape.personal_trainer.service;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import br.edu.ufape.personal_trainer.controller.advice.ResourceNotFoundException;
 import br.edu.ufape.personal_trainer.dto.AvaliacaoFisicaRequest;
 import br.edu.ufape.personal_trainer.model.Aluno;
 import br.edu.ufape.personal_trainer.model.AvaliacaoFisica;
 import br.edu.ufape.personal_trainer.repository.AlunoRepository;
 import br.edu.ufape.personal_trainer.repository.AvaliacaoFisicaRepository;
+import br.edu.ufape.personal_trainer.config.SecurityUtil;
 
 @Service
 public class AvaliacaoFisicaService {
 
-    @Autowired
-    private AvaliacaoFisicaRepository avaliacaoFisicaRepository;
-    
-    @Autowired
-    private AlunoRepository alunoRepository;
+    @Autowired private AvaliacaoFisicaRepository avaliacaoFisicaRepository;
+    @Autowired private AlunoRepository alunoRepository;
 
     @Transactional(readOnly = true)
     public AvaliacaoFisica buscarId(Long id) {
+        SecurityUtil.requireAuthenticated();
         return avaliacaoFisicaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Não existe uma Avaliação Física com o ID: " + id));
     }
 
     @Transactional
     public AvaliacaoFisica criar(AvaliacaoFisicaRequest dto, Aluno aluno) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
-            throw new IllegalStateException("Usuário não autenticado");
-        }
-
-        String usuarioLogado = auth.getName();
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        boolean isPersonal = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_PERSONAL"));
-        boolean isAluno = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ALUNO"));
+        SecurityUtil.requireAdminPersonalOrAluno();
 
         String modalidade = aluno.getModalidade() != null ? aluno.getModalidade().trim().toLowerCase() : "";
-
         if (aluno.getPersonal() == null) {
             throw new IllegalArgumentException("Aluno precisa ter um personal vinculado para ter avaliação física");
         }
 
-        if (isAdmin) {
-        	
-        } else if (isPersonal) {
-            if (!"presencial".equals(modalidade) || !aluno.getPersonal().getEmail().equals(usuarioLogado)) {
-                throw new IllegalArgumentException("Personal só pode criar avaliação para alunos presenciais vinculados a si");
+        if (SecurityUtil.isAdmin()) {
+        } else if (SecurityUtil.isPersonal()) {
+            SecurityUtil.requirePersonalOfAlunoOrAdmin(aluno, "Personal só pode criar avaliação para alunos presenciais vinculados a si");
+            if (!"presencial".equals(modalidade)) {
+                throw new IllegalArgumentException("Personal só pode criar avaliação para alunos presenciais");
             }
-        } else if (isAluno) {
-            if (!"online".equals(modalidade) || !aluno.getEmail().equals(usuarioLogado)) {
-                throw new IllegalArgumentException("Aluno só pode criar avaliação própria se for online e tiver personal");
+        } else if (SecurityUtil.isAluno()) {
+            SecurityUtil.requireOwnerOrAdmin(aluno.getEmail(), "Aluno só pode criar avaliação própria se for online");
+            if (!"online".equals(modalidade)) {
+                throw new IllegalArgumentException("Aluno só pode criar avaliação própria se for online");
             }
-        } else {
-            throw new IllegalArgumentException("Apenas admin, personal ou aluno podem criar avaliações");
         }
 
         AvaliacaoFisica av = new AvaliacaoFisica();
@@ -78,6 +61,7 @@ public class AvaliacaoFisicaService {
 
     @Transactional
     public void deletar(Long id) {
+        SecurityUtil.requireAuthenticated();
         if (!avaliacaoFisicaRepository.existsById(id)) {
             throw new ResourceNotFoundException("Não existe Avaliação Física com ID: " + id);
         }
@@ -86,38 +70,21 @@ public class AvaliacaoFisicaService {
 
     @Transactional(readOnly = true)
     public List<AvaliacaoFisica> encontrarPorIdAluno(Long alunoId) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
-            throw new IllegalStateException("Usuário não autenticado");
-        }
-
-        String usuarioLogado = auth.getName();
-        
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        boolean isPersonal = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_PERSONAL"));
-        boolean isAluno = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ALUNO"));
-
+        SecurityUtil.requireAuthenticated();
         Aluno aluno = alunoRepository.findById(alunoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado"));
 
-        if (isAdmin) {
+        if (SecurityUtil.isAdmin()) {
             return avaliacaoFisicaRepository.findByAlunoUsuarioId(alunoId);
         }
 
-        if (isPersonal) {
-            if (aluno.getPersonal() == null || !aluno.getPersonal().getEmail().equals(usuarioLogado)) {
-                throw new AccessDeniedException("Você não tem permissão para ver avaliações desse aluno");
-            }
+        if (SecurityUtil.isPersonal()) {
+            SecurityUtil.requirePersonalOfAlunoOrAdmin(aluno, "Você não tem permissão para ver avaliações desse aluno");
             return avaliacaoFisicaRepository.findByAlunoUsuarioId(alunoId);
         }
 
-        if (isAluno) {
-            if (!aluno.getEmail().equals(usuarioLogado)) {
-                throw new AccessDeniedException("Você só pode ver suas próprias avaliações");
-            }
+        if (SecurityUtil.isAluno()) {
+            SecurityUtil.requireOwnerOrAdmin(aluno.getEmail(), "Você só pode ver suas próprias avaliações");
             return avaliacaoFisicaRepository.findByAlunoUsuarioId(alunoId);
         }
 

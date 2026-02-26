@@ -13,42 +13,39 @@ import br.edu.ufape.personal_trainer.model.Exercicio;
 import br.edu.ufape.personal_trainer.model.GrupoMuscular;
 import br.edu.ufape.personal_trainer.repository.ExercicioRepository;
 import br.edu.ufape.personal_trainer.repository.GrupoMuscularRepository;
+import br.edu.ufape.personal_trainer.config.SecurityUtil;
 
 @Service
 public class ExercicioService {
 
-    @Autowired
-    private ExercicioRepository exercicioRepository;
-
-    @Autowired
-    private GrupoMuscularRepository grupoMuscularRepository;
+    @Autowired private ExercicioRepository exercicioRepository;
+    @Autowired private GrupoMuscularRepository grupoMuscularRepository;
 
     @Transactional(readOnly = true)
     public List<Exercicio> listarTodos() {
+        SecurityUtil.requireAuthenticated();
         return exercicioRepository.findAll();
     }
 
     @Transactional(readOnly = true)
     public Exercicio buscarId(Long id) {
+        SecurityUtil.requireAuthenticated();
         return exercicioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Não existe exercício com ID: " + id));
     }
 
     @Transactional
     public Exercicio criar(ExercicioRequest request) {
+        SecurityUtil.requireAuthenticated();
         Map<String, String> erros = new HashMap<>();
-
         if (!exercicioRepository.findByNomeContainingIgnoreCase(request.nome()).isEmpty()) {
             erros.put("nome", "Já existe um exercício com nome semelhante");
         }
-
         if (!erros.isEmpty()) {
             throw new BusinessValidationException(erros);
         }
-
         GrupoMuscular grupoMuscular = grupoMuscularRepository.findById(request.grupoMuscularId())
                 .orElseThrow(() -> new ResourceNotFoundException("Grupo muscular não encontrado"));
-
         Exercicio exercicio = new Exercicio();
         exercicio.setNome(request.nome());
         exercicio.setDescricao(request.descricao());
@@ -58,6 +55,7 @@ public class ExercicioService {
 
     @Transactional
     public void deletar(Long id) {
+        SecurityUtil.requireAuthenticated();
         if (!exercicioRepository.existsById(id)) {
             throw new ResourceNotFoundException("Não existe exercício com ID: " + id);
         }
@@ -66,11 +64,13 @@ public class ExercicioService {
 
     @Transactional(readOnly = true)
     public List<Exercicio> buscarPorGrupoMuscular(Long grupoMuscularId) {
+        SecurityUtil.requireAuthenticated();
         return exercicioRepository.findByGrupoMuscular_GrupoMuscularId(grupoMuscularId);
     }
 
     @Transactional(readOnly = true)
     public List<Exercicio> buscarPorNome(String nome) {
+        SecurityUtil.requireAuthenticated();
         return exercicioRepository.findByNomeContainingIgnoreCase(nome);
     }
 }

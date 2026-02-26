@@ -16,8 +16,7 @@ import java.util.List;
 @RequestMapping("/api/planos")
 public class PlanoDeTreinoController {
 
-    @Autowired
-    private PlanoDeTreinoService planoService;
+    @Autowired private PlanoDeTreinoService planoService;
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -47,10 +46,9 @@ public class PlanoDeTreinoController {
                 .stream()
                 .map(PlanoDeTreinoResponse::new)
                 .toList();
-        
         return ResponseEntity.ok(responses);
     }
-    
+
     @GetMapping("/{planoId}/completo")
     @PreAuthorize("hasAnyRole('ADMIN','PERSONAL','ALUNO')")
     public ResponseEntity<PlanoDeTreinoCompletoResponse> buscarPlanoCompleto(@PathVariable Long planoId) {

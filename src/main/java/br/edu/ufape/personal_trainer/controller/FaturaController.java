@@ -15,22 +15,20 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/faturas")
 public class FaturaController {
 
-    @Autowired
-    private FaturaService faturaService;
+    @Autowired private FaturaService faturaService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<FaturaResponse>> listarTodos() {
         List<FaturaResponse> responses = faturaService.listarTodos()
-        		.stream()
+                .stream()
                 .map(FaturaResponse::new)
                 .toList();
-        
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<FaturaResponse> buscarId(@PathVariable Long id) {
         Fatura fatura = faturaService.buscarId(id);
         return ResponseEntity.ok(new FaturaResponse(fatura));
@@ -57,7 +55,6 @@ public class FaturaController {
                 .stream()
                 .map(FaturaResponse::new)
                 .toList();
-        
         return ResponseEntity.ok(responses);
     }
 

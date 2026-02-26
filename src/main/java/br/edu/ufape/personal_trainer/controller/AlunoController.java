@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -60,26 +59,16 @@ public class AlunoController {
 
     @PatchMapping("/{alunoId}/vincular/{personalId}")
     @PreAuthorize("hasAnyRole('PERSONAL','ADMIN')")
-    public ResponseEntity<AlunoResponse> vincularPersonal(@PathVariable Long alunoId, @PathVariable Long personalId, Authentication authentication) {
-        String email = authentication.getName();
-        boolean isAdmin = authentication.getAuthorities()
-                .stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        alunoService.vincularPersonal(alunoId, personalId, email, isAdmin);
+    public ResponseEntity<AlunoResponse> vincularPersonal(@PathVariable Long alunoId, @PathVariable Long personalId) {
+        alunoService.vincularPersonal(alunoId, personalId);
         Aluno aluno = alunoService.buscarId(alunoId);
         return ResponseEntity.ok(new AlunoResponse(aluno));
     }
 
     @PatchMapping("/{alunoId}/desvincular")
     @PreAuthorize("hasAnyRole('PERSONAL','ADMIN')")
-    public ResponseEntity<AlunoResponse> desvincularPersonal(@PathVariable Long alunoId, Authentication authentication) {
-        String email = authentication.getName();
-        boolean isAdmin = authentication.getAuthorities()
-                .stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-
-        alunoService.desvincularPersonal(alunoId, email, isAdmin);
+    public ResponseEntity<AlunoResponse> desvincularPersonal(@PathVariable Long alunoId) {
+        alunoService.desvincularPersonal(alunoId);
         Aluno aluno = alunoService.buscarId(alunoId);
         return ResponseEntity.ok(new AlunoResponse(aluno));
     }

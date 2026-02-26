@@ -15,17 +15,15 @@ import java.util.List;
 @RequestMapping("/api/exercicios")
 public class ExercicioController {
 
-    @Autowired
-    private ExercicioService exercicioService;
+    @Autowired private ExercicioService exercicioService;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','PERSONAL')")
     public ResponseEntity<List<ExercicioResponse>> listarTodos() {
         List<ExercicioResponse> responses = exercicioService.listarTodos()
-        		.stream()
+                .stream()
                 .map(ExercicioResponse::new)
                 .toList();
-        
         return ResponseEntity.ok(responses);
     }
 
@@ -54,10 +52,9 @@ public class ExercicioController {
     @PreAuthorize("hasAnyRole('ADMIN','PERSONAL')")
     public ResponseEntity<List<ExercicioResponse>> buscarPorGrupoMuscular(@PathVariable Long grupoMuscularId) {
         List<ExercicioResponse> responses = exercicioService.buscarPorGrupoMuscular(grupoMuscularId)
-        		.stream()
+                .stream()
                 .map(ExercicioResponse::new)
                 .toList();
-        
         return ResponseEntity.ok(responses);
     }
 
@@ -65,10 +62,9 @@ public class ExercicioController {
     @PreAuthorize("hasAnyRole('ADMIN','PERSONAL')")
     public ResponseEntity<List<ExercicioResponse>> buscarPorNome(@RequestParam String nome) {
         List<ExercicioResponse> responses = exercicioService.buscarPorNome(nome)
-        		.stream()
+                .stream()
                 .map(ExercicioResponse::new)
                 .toList();
-        
         return ResponseEntity.ok(responses);
     }
 }

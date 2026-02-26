@@ -1,9 +1,13 @@
 package br.edu.ufape.personal_trainer.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
 import java.time.LocalDate;
-import java.util.Collections;
+import java.util.List;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,9 +15,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 import br.edu.ufape.personal_trainer.dto.PlanoDeTreinoRequest;
 import br.edu.ufape.personal_trainer.enums.Role;
 import br.edu.ufape.personal_trainer.model.Aluno;
@@ -26,7 +31,6 @@ class PlanoDeTreinoServiceTest {
 
     @Mock private PlanoDeTreinoRepository planoRepository;
     @Mock private AlunoService alunoService;
-
     @InjectMocks private PlanoDeTreinoService planoService;
 
     private Aluno aluno;
@@ -43,13 +47,18 @@ class PlanoDeTreinoServiceTest {
         aluno.setRole(Role.ALUNO);
     }
 
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
     @Test
     void naoPermiteCriarPlanoParaAlunoSemPersonal() {
         Authentication auth = mock(Authentication.class);
-        when(auth.getName()).thenReturn("personal@email.com");
-        when(auth.isAuthenticated()).thenReturn(true);
-        doReturn(Collections.singleton(new SimpleGrantedAuthority("ROLE_PERSONAL")))
-            .when(auth).getAuthorities();
+        lenient().when(auth.getName()).thenReturn("personal@email.com");
+        lenient().when(auth.isAuthenticated()).thenReturn(true);
+        lenient().when(auth.getAuthorities()).thenAnswer(invocation ->
+            List.of(new SimpleGrantedAuthority("ROLE_PERSONAL")));
 
         SecurityContext context = mock(SecurityContext.class);
         when(context.getAuthentication()).thenReturn(auth);
@@ -76,24 +85,21 @@ class PlanoDeTreinoServiceTest {
 
         assertEquals("Aluno precisa estar vinculado a um personal", ex.getMessage());
         verify(planoRepository, never()).save(any());
-
-        SecurityContextHolder.clearContext();
     }
 
     @Test
     void permiteCriarPlanoParaAlunoComPersonal() {
         Authentication auth = mock(Authentication.class);
-        when(auth.getName()).thenReturn("personal@email.com");
-        when(auth.isAuthenticated()).thenReturn(true);
-        doReturn(Collections.singleton(new SimpleGrantedAuthority("ROLE_PERSONAL")))
-            .when(auth).getAuthorities();
+        lenient().when(auth.getName()).thenReturn("personal@email.com");
+        lenient().when(auth.isAuthenticated()).thenReturn(true);
+        lenient().when(auth.getAuthorities()).thenAnswer(invocation ->
+            List.of(new SimpleGrantedAuthority("ROLE_PERSONAL")));
 
         SecurityContext context = mock(SecurityContext.class);
         when(context.getAuthentication()).thenReturn(auth);
         SecurityContextHolder.setContext(context);
 
         when(alunoService.buscarId(1L)).thenReturn(aluno);
-
         when(planoRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
         PlanoDeTreinoRequest request = new PlanoDeTreinoRequest(
@@ -108,9 +114,6 @@ class PlanoDeTreinoServiceTest {
         assertNotNull(plano);
         assertEquals("Plano Semanal", plano.getNome());
         assertEquals(aluno, plano.getAluno());
-
         verify(planoRepository).save(any());
-
-        SecurityContextHolder.clearContext();
     }
 }
