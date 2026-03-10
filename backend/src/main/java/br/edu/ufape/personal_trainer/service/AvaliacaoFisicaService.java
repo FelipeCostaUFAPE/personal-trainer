@@ -21,6 +21,12 @@ public class AvaliacaoFisicaService {
 
     @Autowired private AvaliacaoFisicaRepository avaliacaoFisicaRepository;
     @Autowired private AlunoRepository alunoRepository;
+    
+    @Transactional(readOnly = true)
+    public List<AvaliacaoFisica> listarTodos() {
+        SecurityUtil.requireAuthenticated();
+        return avaliacaoFisicaRepository.findAll();
+    }
 
     @Transactional(readOnly = true)
     public AvaliacaoFisica buscarId(Long id) {
