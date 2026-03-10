@@ -45,5 +45,5 @@ public class GrupoMuscularController {
     @PreAuthorize("hasAnyRole('ADMIN','PERSONAL')")
     public ResponseEntity<GrupoMuscular> buscarPorNome(@RequestParam String nome) {
         return ResponseEntity.ok(grupoMuscularService.buscarPorNome(nome));
-    }
+    } 
 }
