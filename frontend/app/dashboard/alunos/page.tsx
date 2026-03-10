@@ -23,44 +23,71 @@ export default function AlunosPage() {
   const buscarAlunos = async () => {
     try {
       const cookies = document.cookie.split("; ");
-      const tokenCookie = cookies.find((row) => row.startsWith("token="));
-      const token = tokenCookie ? tokenCookie.split("=")[1] : null;
+      const tokenCookie = cookies.find((row) => row.trim().startsWith("token="));
+      const token = tokenCookie ? tokenCookie.split("=")[1].trim() : null;
 
-      if (!token) return;
+      if (!token) {
+        console.error("Token não encontrado");
+        alert("Faça login novamente.");
+        return;
+      }
 
-      // 1. Tenta a rota do ADMIN primeiro
+      console.log("Token enviado:", token.substring(0, 30) + "...");
+
       let resposta = await fetch("http://localhost:8080/api/alunos", {
-        headers: { Authorization: `Bearer ${token}` },
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
 
-      // 2. Se o Java disser "403 Proibido", o PERSONAL está logado!
-      if (resposta.status === 403) {
+      console.log("Status admin:", resposta.status);
+
+      if (resposta.status === 403 || resposta.status === 401 || resposta.status === 500) {
+        console.log("Admin falhou, tentando personal...");
         resposta = await fetch("http://localhost:8080/api/personais/me/alunos", {
-          headers: { Authorization: `Bearer ${token}` },
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         });
+        console.log("Status personal:", resposta.status);
       }
 
       if (resposta.ok) {
-        setAlunos(await resposta.json());
+        const data = await resposta.json();
+        console.log("Dados OK:", data);
+        setAlunos(data);
       } else {
-        console.error("Erro ao buscar alunos. Status:", resposta.status);
+        const text = await resposta.text(); // Lê como texto primeiro
+        let errorMsg = `Erro ${resposta.status}`;
+        try {
+          const errorData = JSON.parse(text);
+          errorMsg += ` - ${errorData.message || errorData.error || JSON.stringify(errorData)}`;
+        } catch {
+          errorMsg += ` - ${text.substring(0, 200)}...`; // Mostra parte do corpo
+        }
+        console.error(errorMsg);
+        alert(errorMsg);
       }
     } catch (error) {
-      console.error(error);
+      console.error("Erro de fetch:", error);
+      alert("Erro de conexão.");
     } finally {
-      
-      if (typeof setCarregando === 'function') {
-        setCarregando(false);
-      }
+      setCarregando(false);
     }
   };
 
   const vincularPersonal = async (alunoId: number) => {
     // 1. Pergunta para qual Personal vamos enviar este aluno
     const personalId = prompt("Digite o ID numérico do Personal que vai treinar este aluno:");
-    
+
     // Se o usuário clicar em Cancelar ou não digitar nada, a função para aqui
-    if (!personalId) return; 
+    if (!personalId) return;
 
     try {
       const cookies = document.cookie.split("; ");
@@ -127,8 +154,8 @@ export default function AlunosPage() {
           <h1 className="text-3xl font-bold text-zinc-100">Alunos</h1>
           <p className="text-zinc-400 mt-1">Gerencie os alunos cadastrados no sistema.</p>
         </div>
-        <Link 
-          href="/dashboard/alunos/novo" 
+        <Link
+          href="/dashboard/alunos/novo"
           className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-lg shadow-emerald-900/20"
         >
           + Novo Aluno
@@ -158,14 +185,14 @@ export default function AlunosPage() {
                   <td className="px-6 py-4">{aluno.email}</td>
                   <td className="px-6 py-4 capitalize">{aluno.modalidade}</td>
                   <td className="px-6 py-4 capitalize">{aluno.objetivo}</td>
-                  
+
                   <td className="px-6 py-4 text-center flex items-center justify-center gap-2">
                     <span className={`px-3 py-1.5 rounded-md text-xs font-medium ${aluno.ativo ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-zinc-500/10 text-zinc-500 border border-zinc-500/20'}`}>
                       {aluno.ativo ? "Ativo" : "Inativo"}
                     </span>
-                    
+
                     {!aluno.ativo && (
-                      <button 
+                      <button
                         onClick={() => vincularPersonal(aluno.id)}
                         className="text-xs bg-blue-600/10 text-blue-400 border border-blue-600/30 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-md transition-colors"
                       >
@@ -174,7 +201,7 @@ export default function AlunosPage() {
                     )}
 
                     {/* BOTÃO DE APAGAR ADICIONADO AQUI */}
-                    <button 
+                    <button
                       onClick={() => handleExcluirAluno(aluno.id)}
                       className="text-xs bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white px-3 py-1.5 rounded-md transition-colors"
                     >

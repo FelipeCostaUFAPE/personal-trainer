@@ -94,6 +94,6 @@ public class PersonalService {
     public Personal buscarPorEmail(String email) {
         SecurityUtil.requireAuthenticated();
         return personalRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Não existe personal com EMAIL: " + email));
+                .orElseThrow(() -> new ResourceNotFoundException("Personal não encontrado com email: " + email));
     }
 }

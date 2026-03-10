@@ -99,20 +99,20 @@ public class PlanoDeTreinoService {
         plano.getDias().forEach(dia -> Hibernate.initialize(dia.getItens()));
         return new PlanoDeTreinoCompletoResponse(plano);
     }
-    
+
     @Transactional(readOnly = true)
     public List<PlanoDeTreino> listarTodos() {
         SecurityUtil.requireAuthenticated();
         SecurityUtil.requireAdminOrPersonal();
-        
+        List<PlanoDeTreino> todos = planoDeTreinoRepository.findAll();
         if (SecurityUtil.isAdmin()) {
-            return planoDeTreinoRepository.findAll();
+            return todos;
         } else {
             String emailLogado = SecurityUtil.getCurrentEmail();
-            return planoDeTreinoRepository.findAll().stream()
-                    .filter(p -> p.getAluno() != null && 
-                                 p.getAluno().getPersonal() != null && 
-                                 p.getAluno().getPersonal().getEmail().equals(emailLogado))
+            return todos.stream()
+                    .filter(p -> p.getAluno() != null 
+                              && p.getAluno().getPersonal() != null 
+                              && emailLogado.equals(p.getAluno().getPersonal().getEmail()))
                     .toList();
         }
     }

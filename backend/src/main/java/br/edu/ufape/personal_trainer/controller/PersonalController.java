@@ -20,9 +20,7 @@ import br.edu.ufape.personal_trainer.dto.AlunoResponse;
 import br.edu.ufape.personal_trainer.dto.PersonalRequest;
 import br.edu.ufape.personal_trainer.dto.PersonalResponse;
 import br.edu.ufape.personal_trainer.dto.PersonalUpdateRequest;
-import br.edu.ufape.personal_trainer.model.Aluno;
 import br.edu.ufape.personal_trainer.model.Personal;
-import br.edu.ufape.personal_trainer.service.AlunoService;
 import br.edu.ufape.personal_trainer.service.PersonalService;
 import jakarta.validation.Valid;
 
@@ -30,8 +28,8 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/personais")
 public class PersonalController {
 
-    @Autowired private PersonalService personalService;
-    @Autowired private AlunoService alunoService;
+    @Autowired 
+    private PersonalService personalService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")

@@ -1,14 +1,22 @@
 package br.edu.ufape.personal_trainer.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import br.edu.ufape.personal_trainer.controller.advice.ResourceNotFoundException;
 import br.edu.ufape.personal_trainer.dto.FaturaRequest;
 import br.edu.ufape.personal_trainer.dto.FaturaResponse;
+import br.edu.ufape.personal_trainer.model.Aluno;
 import br.edu.ufape.personal_trainer.model.Fatura;
+import br.edu.ufape.personal_trainer.model.Personal;
+import br.edu.ufape.personal_trainer.service.AlunoService;
 import br.edu.ufape.personal_trainer.service.FaturaService;
+import br.edu.ufape.personal_trainer.service.PersonalService;
 import jakarta.validation.Valid;
 
 @RestController
@@ -16,6 +24,8 @@ import jakarta.validation.Valid;
 public class FaturaController {
 
     @Autowired private FaturaService faturaService;
+    @Autowired private AlunoService alunoService;
+    @Autowired private PersonalService personalService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -70,5 +80,24 @@ public class FaturaController {
     public ResponseEntity<FaturaResponse> cancelarFatura(@PathVariable Long id) {
         Fatura fatura = faturaService.cancelarFatura(id);
         return ResponseEntity.ok(new FaturaResponse(fatura));
+    }
+    
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('PERSONAL')")
+    public ResponseEntity<List<FaturaResponse>> listarMinhasFaturas(Authentication authentication) {
+        String emailLogado = authentication.getName();
+        Personal personal = personalService.buscarPorEmail(emailLogado);
+        if (personal == null) {
+            throw new ResourceNotFoundException("Personal não encontrado");
+        }
+        List<Aluno> alunosDoPersonal = alunoService.listarAlunosPersonal(personal.getUsuarioId());
+        List<Fatura> faturas = new ArrayList<>();
+        for (Aluno aluno : alunosDoPersonal) {
+            faturas.addAll(faturaService.buscarPorAlunoId(aluno.getUsuarioId()));
+        }
+        List<FaturaResponse> responses = faturas.stream()
+                .map(FaturaResponse::new)
+                .toList();
+        return ResponseEntity.ok(responses);
     }
 }

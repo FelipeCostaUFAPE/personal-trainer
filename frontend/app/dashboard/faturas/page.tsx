@@ -57,19 +57,15 @@ export default function FaturasPage() {
 
   const buscarAlunos = async () => {
     try {
-      const cookies = document.cookie.split("; ");
-      const tokenCookie = cookies.find((row) => row.startsWith("token="));
-      const token = tokenCookie ? tokenCookie.split("=")[1] : null;
-
+      const token = document.cookie.split("; ").find(row => row.startsWith("token="))?.split("=")[1]?.trim();
       if (!token) return;
 
-      // 1. Tenta a rota do ADMIN primeiro
       let resposta = await fetch("http://localhost:8080/api/alunos", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // 2. Se o Java disser "403 Proibido", o PERSONAL está logado!
-      if (resposta.status === 403) {
+      if (resposta.status === 403 || resposta.status === 401 || resposta.status === 500) {
+        console.log("Rota alunos admin falhou (esperado para personal), tentando me/alunos...");
         resposta = await fetch("http://localhost:8080/api/personais/me/alunos", {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -78,28 +74,38 @@ export default function FaturasPage() {
       if (resposta.ok) {
         setAlunos(await resposta.json());
       } else {
-        console.error("Erro ao buscar alunos. Status:", resposta.status);
+        // Só loga erro se AMBAS falharem (não alerta o usuário)
+        console.error("Falha ao buscar alunos após fallback. Status:", resposta.status);
       }
     } catch (error) {
-      console.error(error);
-    } finally {
-      // ESTA É A LINHA QUE DESTRAVA A TABELA!
-      if (typeof setCarregando === 'function') {
-        setCarregando(false);
-      }
+      console.error("Erro de rede ao buscar alunos:", error);
     }
   };
 
   const buscarFaturas = async () => {
     try {
-      const token = document.cookie.split("; ").find(row => row.startsWith("token="))?.split("=")[1];
-      const resposta = await fetch("http://localhost:8080/api/faturas", {
-        headers: { Authorization: `Bearer ${token}` }
+      const token = document.cookie.split("; ").find(row => row.startsWith("token="))?.split("=")[1]?.trim();
+      if (!token) return;
+
+      let resposta = await fetch("http://localhost:8080/api/faturas", {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      if (lidarComErro401(resposta.status)) return;
-      if (resposta.ok) setFaturas(await resposta.json());
+
+      if (resposta.status === 403 || resposta.status === 401 || resposta.status === 500) {
+        console.log("Rota faturas admin falhou (esperado para personal), tentando /me...");
+        resposta = await fetch("http://localhost:8080/api/faturas/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
+
+      if (resposta.ok) {
+        setFaturas(await resposta.json());
+      } else {
+        // Só loga erro se AMBAS falharem (não alerta o usuário)
+        console.error("Falha ao buscar faturas após fallback. Status:", resposta.status);
+      }
     } catch (error) {
-      console.error(error);
+      console.error("Erro de rede ao buscar faturas:", error);
     }
   };
 

@@ -13,7 +13,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureException;
 import java.io.IOException;
 
 @Component
@@ -38,11 +40,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            logger.debug("Requisição sem token JWT: {}", request.getRequestURI());
             filterChain.doFilter(request, response);
             return;
         }
 
         final String jwt = authHeader.substring(7);
+        logger.debug("Token JWT encontrado na requisição: {}...", jwt.substring(0, Math.min(20, jwt.length())));
 
         try {
             String username = jwtUtil.extractUsername(jwt);
@@ -57,16 +61,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     null,
                                     userDetails.getAuthorities()
                             );
-                    authToken.setDetails(
-                            new WebAuthenticationDetailsSource().buildDetails(request)
-                    );
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    logger.info("Autenticação bem-sucedida para usuário: {}", username);
+                } else {
+                    logger.warn("Token JWT inválido para usuário: {}", username);
                 }
             }
+        } catch (ExpiredJwtException e) {
+            logger.warn("Token JWT expirado na requisição para {}: {}", request.getRequestURI(), e.getMessage());
+        } catch (MalformedJwtException | SignatureException e) {
+            logger.warn("Token JWT malformado ou assinatura inválida na requisição para {}: {}", request.getRequestURI(), e.getMessage());
         } catch (Exception e) {
-            logger.warn("Falha na validação do JWT token na requisição para {}: {}", 
-                        request.getRequestURI(), 
-                        e.getMessage(), e);
+            logger.error("Erro inesperado ao validar JWT na requisição para {}: {}", request.getRequestURI(), e.getMessage(), e);
         }
 
         filterChain.doFilter(request, response);
