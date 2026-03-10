@@ -13,7 +13,7 @@ public record FaturaRequest(
     Double valor,
 
     @NotNull(message = "Data de vencimento é obrigatória")
-    @Future(message = "Vencimento deve ser no futuro")
+    @FutureOrPresent(message = "Vencimento deve ser hoje ou no futuro")
     @JsonFormat(pattern = "dd/MM/yyyy")
     LocalDate dataVencimento
 ) {}

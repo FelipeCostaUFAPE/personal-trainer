@@ -1,122 +1,131 @@
-# 🏋️‍♂️ Personal Trainer API - Sistema de Gestão para Personal Trainers
+# 🏋️‍♂️ Personal Trainer System - Plataforma Fullstack de Gestão
 
-Projeto desenvolvido para a disciplina de **Programação Web**  
-Universidade Federal do Agreste de Pernambuco (UFAPE)
+Projeto desenvolvido para a disciplina de **Programação Web** Universidade Federal do Agreste de Pernambuco (UFAPE)
 
-#### Alunos:
-
+#### Equipe de Desenvolvimento:
 - Brendo Brito
 - Felipe Souza
 - Thiago Mauricio
 
 ---
+
 ## 1. Visão Geral do Produto
 
-API RESTful desenvolvida como backend para um sistema de gestão voltado a personal trainers e seus alunos. O sistema permite o gerenciamento de alunos, planos de treino, itens de treino, avaliações físicas, faturas, exercícios, grupos musculares e comunicação via chat.
+O **Personal Trainer System** é uma plataforma Fullstack completa (API RESTful + Interface Web) desenvolvida para facilitar a gestão de personal trainers e o acompanhamento de seus alunos. O sistema permite o gerenciamento de perfis, planos de treino, avaliações físicas, faturas financeiras, catálogo de exercícios e comunicação direta via chat.
+
+A arquitetura garante que o Administrador tenha controle global do sistema, enquanto os Personal Trainers têm um painel exclusivo para gerenciar apenas os alunos vinculados a eles.
 
 ---
 
-## 2. Tecnologias Utilizadas
+## 2. Tecnologias Utilizadas 🛠️
 
-### 2.1 Stack Tecnológica
+O projeto foi construído separando as responsabilidades entre Backend e Frontend, utilizando tecnologias modernas do mercado.
+
+### 2.1 Backend (API)
 - **Linguagem:** Java 21
 - **Framework:** Spring Boot 3.2.5
-- **Banco de Dados:** PostgreSQL (principal) / H2 (testes)
-- **Documentação API:** SpringDoc OpenAPI (Swagger UI)
+- **Segurança:** Spring Security + JWT (JSON Web Tokens)
+- **Banco de Dados:** PostgreSQL (Produção) / H2 (Testes)
+- **Documentação da API:** SpringDoc OpenAPI (Swagger UI)
+
+### 2.2 Frontend (Interface Web)
+- **Framework:** Next.js 16 (App Router)
+- **Linguagem:** TypeScript
+- **Estilização:** Tailwind CSS + Componentes Customizados
+- **Comunicação:** Fetch API com interceptação de tokens JWT
 
 ---
 
-## 3. Atores do Sistema
+## 3. Atores do Sistema 🔐
 
-| Ator                | Descrição                                                                 |
-|---------------------|---------------------------------------------------------------------------|
-| **Personal Trainer**| Profissional responsável pelo acompanhamento dos alunos                   |
-| **Aluno**           | Cliente que contrata o personal trainer                                   |
+| Ator                | Nível de Acesso e Descrição                                                                 |
+|---------------------|---------------------------------------------------------------------------------------------|
+| **Administrador** | Acesso total. Pode visualizar e gerir todos os alunos do sistema e cadastrar categorias base (como Grupos Musculares). |
+| **Personal Trainer**| Acesso restrito. Visualiza e gerencia **apenas** os alunos vinculados a ele. Pode montar treinos, acompanhar faturas e criar exercícios para sua biblioteca. |
+| **Aluno** | Cliente final. Acessa seus planos de treino, avaliações físicas, histórico de faturas e chat com seu personal. |
 
 ---
 
-## 4. Funcionalidades por Módulo
+## 4. Funcionalidades por Módulo ⚙️
 
-### 4.1 Módulo de Usuários
-- Cadastro aberto de alunos e personais
-- Vinculação de aluno a um personal (ativa funcionalidades do aluno)
-- Desvinculação de aluno (desativa funcionalidades)
+### 4.1 Módulo de Usuários e Vínculos
+- Autenticação e Autorização baseada em cargos (Roles) via JWT.
+- Vinculação de aluno a um personal (ativa funcionalidades do aluno).
+- Desvinculação de aluno (desativa funcionalidades).
 
 ### 4.2 Módulo de Exercícios e Grupos Musculares
-- Cadastro de grupos musculares
-- Catálogo de exercícios com descrição e associação a grupo muscular
-- Busca por nome ou grupo muscular
+- Grupos musculares pré-cadastrados no sistema.
+- Catálogo de exercícios onde o Personal pode adicionar suas próprias variações e associá-las a um grupo muscular.
 
 ### 4.3 Módulo de Planos de Treino
-- Criação de planos com nome, datas de início/fim
-- Limite de apenas um plano ativo por aluno
-- Adição livre de itens de treino (exercício, séries, repetições, carga, descanso)
-- Permite repetição do mesmo exercício (útil para diferentes dias da semana)
+- Criação de planos de treino com nome e validade (datas de início/fim).
+- Limite de apenas um plano ativo por aluno.
+- Adição detalhada de itens de treino (exercício, séries, repetições, carga, descanso).
 
-### 4.4 Módulo de Avaliações Físicas
-- Registro de métricas (peso, altura, percentual de gordura, observações, foto)
-- Indicação se foi realizada pelo personal ou pelo aluno
-- Histórico por aluno
+### 4.4 Módulo de Faturas
+- Controle financeiro automatizado com status: `PENDENTE`, `PAGA`, `CANCELADA`, `VENCIDA`.
+- Limite de apenas uma fatura pendente por aluno.
+- Bloqueio de exclusão: Um aluno não pode ser deletado do sistema se possuir faturas pendentes ou vencidas.
 
-### 4.5 Módulo de Faturas
-- Controle de cobranças com valor, data de vencimento e status
-- Status possíveis: PENDENTE, PAGA, CANCELADA, VENCIDA
-- Limite de apenas uma fatura pendente por aluno
-- Pagamento e cancelamento manual
-- Vencimento automático (status muda para VENCIDA após a data)
-
-### 4.6 Módulo de Chat
-- Chat individual entre personal e aluno
-- Criação automática e restrita: apenas entre aluno e seu personal vinculado
-- Envio de mensagens de texto com timestamp
-- Identificação do remetente (aluno ou personal)
+### 4.5 Módulo de Comunicação e Avaliação
+- **Chat:** Comunicação isolada e restrita apenas entre o aluno e o seu personal vinculado.
+- **Avaliações Físicas:** Registro de evolução contendo métricas como peso, altura, e percentual de gordura.
 
 ---
 
-## 5. Documentação da API
+## 5. Casos de Teste e Qualidade 🧪
 
-A API está totalmente documentada via **Swagger UI**.
+Os principais cenários foram validados rigorosamente e o backend possui testes unitários e de integração.
 
-Acesse após iniciar a aplicação:  
-**http://localhost:8080/swagger-ui.html**
+**Validações implementadas:**
+- Prevenção de duplicidade (Email e CREF únicos).
+- Vínculo exclusivo (Um aluno só pode ter um personal).
+- Rotas protegidas (Personal não pode acessar rotas ou alunos de outros personais).
 
-Permite testar todos os endpoints interativamente.
-
----
-## 6. Casos de Teste
-
-Os principais cenários foram validados via Swagger/Postman:
-
-- Cadastro de aluno e personal com validação de duplicidade (email/CREF)
-- Vinculação/desvinculação aluno-personal
-- Criação de fatura com limite de 1 pendente e vencimento automático
-- Criação de chat apenas entre aluno e seu personal
-- Envio de mensagens com identificação do remetente
-- Restrições: aluno sem personal não pode ter plano, avaliação ou fatura
-
----
-## 7. Testes
-
-O projeto possui testes unitários e testes de integração.
-
-Para executar os testes:
-
+Para executar a suíte de testes do Java:
 ```bash
 mvn test
 ```
 
-## 8. Guia de Execução
+---
 
-### 8.1 Pré-requisitos
-- Java 21
-- Maven
-- PostgreSQL
+## 6. Guia de Execução (Passo a Passo) 🚀
 
-### 8.2 Configuração do Banco de Dados
-- Banco: `personal_trainer_db`
-- Usuário: `postgres`
-- Senha: `personaltrainer`
+Para rodar o projeto localmente, você precisará subir o Banco de Dados, o Backend e o Frontend.
 
-### 8.3 Como Executar
-```bash
-mvn spring-boot:run
+### Pré-requisitos
+- **Java 21** e **Maven**
+- **Node.js** (v18+) e **NPM**
+- **PostgreSQL** rodando na porta padrão (5432)
+
+### Passo 1: Configurar o Banco de Dados
+Crie um banco de dados no PostgreSQL com as seguintes credenciais (configuradas no `application.properties`):
+- **Nome do Banco:** `personal_trainer_db`
+- **Usuário:** `postgres`
+- **Senha:** `personaltrainer`
+
+### Passo 2: Rodar o Backend (API Spring Boot)
+1. Abra o terminal e navegue até a pasta raiz do backend (onde está o arquivo `pom.xml`).
+2. Execute o comando do Maven para baixar as dependências e iniciar o servidor:
+   ```bash
+   mvn spring-boot:run
+   ```
+3. A API estará rodando em: `http://localhost:8080`
+4. Acesse a **Documentação Swagger** em: `http://localhost:8080/swagger-ui.html`
+
+### Passo 3: Rodar o Frontend (Next.js)
+1. Abra um **novo terminal** e navegue até a pasta do frontend.
+2. Instale todas as dependências do Node:
+   ```bash
+   npm install
+   ```
+3. Inicie o servidor de desenvolvimento web:
+   ```bash
+   npm run dev
+   ```
+4. Acesse o sistema pelo navegador em: `http://localhost:3000`
+
+### 🔑 Credenciais Padrão de Teste
+Para testar o sistema, você pode usar a conta de Administrador gerada automaticamente ao rodar o backend pela primeira vez:
+- **E-mail:** `admin@gmail.com`
+- **Senha:** `123456`

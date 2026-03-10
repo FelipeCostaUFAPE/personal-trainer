@@ -13,12 +13,12 @@ public record PlanoDeTreinoRequest(
     String nome,
 
     @NotNull(message = "Data de início é obrigatória")
-    @Future(message = "Data inicio deve ser no futuro")
+    @FutureOrPresent(message = "Data de início não pode ser no passado")
     @JsonFormat(pattern = "dd/MM/yyyy")
     LocalDate dataInicio,
     
     @NotNull(message = "Data de fim é obrigatória")
-    @Future(message = "Data fim deve ser no futuro")
+    @FutureOrPresent(message = "Data de fim não pode ser no passado")
     @JsonFormat(pattern = "dd/MM/yyyy")
     LocalDate dataFim
 ) {}

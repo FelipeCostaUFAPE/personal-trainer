@@ -3,17 +3,20 @@ package br.edu.ufape.personal_trainer.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import br.edu.ufape.personal_trainer.config.SecurityUtil;
 import br.edu.ufape.personal_trainer.controller.advice.BusinessValidationException;
 import br.edu.ufape.personal_trainer.controller.advice.ResourceNotFoundException;
 import br.edu.ufape.personal_trainer.dto.PersonalRequest;
+import br.edu.ufape.personal_trainer.dto.PersonalUpdateRequest;
 import br.edu.ufape.personal_trainer.enums.Role;
 import br.edu.ufape.personal_trainer.model.Personal;
 import br.edu.ufape.personal_trainer.repository.PersonalRepository;
-import br.edu.ufape.personal_trainer.config.SecurityUtil;
 
 @Service
 public class PersonalService {
@@ -52,6 +55,21 @@ public class PersonalService {
         personal.setSenha(passwordEncoder.encode(request.senha()));
         personal.setCref(request.cref());
         personal.setRole(Role.PERSONAL);
+        return personalRepository.save(personal);
+    }
+    
+    @Transactional
+    public Personal atualizar(Long id, PersonalUpdateRequest request) {
+        SecurityUtil.requireAdminOrPersonal();
+        Personal personal = buscarId(id);
+        SecurityUtil.requireOwnerOrAdmin(personal.getEmail(), "Você só pode editar seu próprio perfil");
+        if (request.nome() != null) personal.setNome(request.nome());
+        if (request.cref() != null) {
+            if (personalRepository.findByCref(request.cref()).isPresent() && !personal.getCref().equals(request.cref())) {
+                throw new BusinessValidationException(Map.of("cref", "CREF já cadastrado"));
+            }
+            personal.setCref(request.cref());
+        }
         return personalRepository.save(personal);
     }
 

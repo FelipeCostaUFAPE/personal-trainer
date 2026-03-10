@@ -1,17 +1,20 @@
 package br.edu.ufape.personal_trainer.service;
 
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import br.edu.ufape.personal_trainer.config.SecurityUtil;
 import br.edu.ufape.personal_trainer.controller.advice.ResourceNotFoundException;
 import br.edu.ufape.personal_trainer.dto.AvaliacaoFisicaRequest;
+import br.edu.ufape.personal_trainer.dto.AvaliacaoFisicaUpdateRequest;
 import br.edu.ufape.personal_trainer.model.Aluno;
 import br.edu.ufape.personal_trainer.model.AvaliacaoFisica;
 import br.edu.ufape.personal_trainer.repository.AlunoRepository;
 import br.edu.ufape.personal_trainer.repository.AvaliacaoFisicaRepository;
-import br.edu.ufape.personal_trainer.config.SecurityUtil;
 
 @Service
 public class AvaliacaoFisicaService {
@@ -56,6 +59,20 @@ public class AvaliacaoFisicaService {
         av.setPercentualGordura(dto.percentualGordura());
         av.setObservacoes(dto.observacoes());
         av.setFeitoPeloPersonal("presencial".equals(modalidade));
+        return avaliacaoFisicaRepository.save(av);
+    }
+    
+    @Transactional
+    public AvaliacaoFisica atualizar(Long id, AvaliacaoFisicaUpdateRequest request) {
+        SecurityUtil.requireAdminOrPersonal();
+        AvaliacaoFisica av = buscarId(id);
+        Aluno aluno = av.getAluno();
+        SecurityUtil.requirePersonalOfAlunoOrAdmin(aluno, "Você não tem permissão para editar esta avaliação");
+        if (request.dataAvaliacao() != null) av.setDataAvaliacao(request.dataAvaliacao());
+        if (request.pesoKg() != null) av.setPesoKg(request.pesoKg());
+        if (request.alturaCm() != null) av.setAlturaCm(request.alturaCm());
+        if (request.percentualGordura() != null) av.setPercentualGordura(request.percentualGordura());
+        if (request.observacoes() != null) av.setObservacoes(request.observacoes());
         return avaliacaoFisicaRepository.save(av);
     }
 

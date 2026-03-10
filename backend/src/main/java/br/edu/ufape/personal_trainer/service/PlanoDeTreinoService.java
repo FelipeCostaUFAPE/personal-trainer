@@ -1,17 +1,20 @@
 package br.edu.ufape.personal_trainer.service;
 
 import java.util.List;
+
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import br.edu.ufape.personal_trainer.config.SecurityUtil;
 import br.edu.ufape.personal_trainer.controller.advice.ResourceNotFoundException;
 import br.edu.ufape.personal_trainer.dto.PlanoDeTreinoCompletoResponse;
 import br.edu.ufape.personal_trainer.dto.PlanoDeTreinoRequest;
+import br.edu.ufape.personal_trainer.dto.PlanoDeTreinoUpdateRequest;
 import br.edu.ufape.personal_trainer.model.Aluno;
 import br.edu.ufape.personal_trainer.model.PlanoDeTreino;
 import br.edu.ufape.personal_trainer.repository.PlanoDeTreinoRepository;
-import br.edu.ufape.personal_trainer.config.SecurityUtil;
 
 @Service
 public class PlanoDeTreinoService {
@@ -40,6 +43,17 @@ public class PlanoDeTreinoService {
         plano.setNome(dto.nome());
         plano.setDataInicio(dto.dataInicio());
         plano.setDataFim(dto.dataFim());
+        return planoDeTreinoRepository.save(plano);
+    }
+    
+    @Transactional
+    public PlanoDeTreino atualizar(Long id, PlanoDeTreinoUpdateRequest request) {
+        SecurityUtil.requireAdminOrPersonal();
+        PlanoDeTreino plano = buscarId(id);
+        SecurityUtil.requirePersonalOfPlanoOrAdmin(plano, "Você não tem permissão para editar este plano");
+        if (request.nome() != null) plano.setNome(request.nome());
+        if (request.dataInicio() != null) plano.setDataInicio(request.dataInicio());
+        if (request.dataFim() != null) plano.setDataFim(request.dataFim());
         return planoDeTreinoRepository.save(plano);
     }
 
@@ -84,5 +98,22 @@ public class PlanoDeTreinoService {
         Hibernate.initialize(plano.getDias());
         plano.getDias().forEach(dia -> Hibernate.initialize(dia.getItens()));
         return new PlanoDeTreinoCompletoResponse(plano);
+    }
+    
+    @Transactional(readOnly = true)
+    public List<PlanoDeTreino> listarTodos() {
+        SecurityUtil.requireAuthenticated();
+        SecurityUtil.requireAdminOrPersonal();
+        
+        if (SecurityUtil.isAdmin()) {
+            return planoDeTreinoRepository.findAll();
+        } else {
+            String emailLogado = SecurityUtil.getCurrentEmail();
+            return planoDeTreinoRepository.findAll().stream()
+                    .filter(p -> p.getAluno() != null && 
+                                 p.getAluno().getPersonal() != null && 
+                                 p.getAluno().getPersonal().getEmail().equals(emailLogado))
+                    .toList();
+        }
     }
 }

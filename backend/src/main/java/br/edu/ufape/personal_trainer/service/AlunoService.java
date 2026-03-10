@@ -4,20 +4,23 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import br.edu.ufape.personal_trainer.config.SecurityUtil;
 import br.edu.ufape.personal_trainer.controller.advice.BusinessValidationException;
 import br.edu.ufape.personal_trainer.controller.advice.ResourceNotFoundException;
 import br.edu.ufape.personal_trainer.dto.AlunoRequest;
+import br.edu.ufape.personal_trainer.dto.AlunoUpdateRequest;
 import br.edu.ufape.personal_trainer.enums.Role;
 import br.edu.ufape.personal_trainer.enums.StatusFatura;
 import br.edu.ufape.personal_trainer.model.Aluno;
 import br.edu.ufape.personal_trainer.model.Personal;
 import br.edu.ufape.personal_trainer.repository.AlunoRepository;
 import br.edu.ufape.personal_trainer.repository.PersonalRepository;
-import br.edu.ufape.personal_trainer.config.SecurityUtil;
 
 @Service
 public class AlunoService {
@@ -57,6 +60,18 @@ public class AlunoService {
         aluno.setObjetivo(request.objetivo());
         aluno.setAtivo(false);
         aluno.setRole(Role.ALUNO);
+        return alunoRepository.save(aluno);
+    }
+    
+    @Transactional
+    public Aluno atualizar(Long id, AlunoUpdateRequest request) {
+        SecurityUtil.requireAdminOrPersonal();
+        Aluno aluno = buscarId(id);
+        SecurityUtil.requirePersonalOfAlunoOrAdmin(aluno, "Você só pode editar alunos vinculados a você");
+        if (request.nome() != null) aluno.setNome(request.nome());
+        if (request.dataNascimento() != null) aluno.setDataNascimento(request.dataNascimento());
+        if (request.modalidade() != null) aluno.setModalidade(request.modalidade());
+        if (request.objetivo() != null) aluno.setObjetivo(request.objetivo());
         return alunoRepository.save(aluno);
     }
 

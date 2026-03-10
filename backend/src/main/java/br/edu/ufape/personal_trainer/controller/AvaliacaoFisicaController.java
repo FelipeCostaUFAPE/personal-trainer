@@ -1,12 +1,22 @@
 package br.edu.ufape.personal_trainer.controller;
 
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import br.edu.ufape.personal_trainer.dto.AvaliacaoFisicaRequest;
 import br.edu.ufape.personal_trainer.dto.AvaliacaoFisicaResponse;
+import br.edu.ufape.personal_trainer.dto.AvaliacaoFisicaUpdateRequest;
 import br.edu.ufape.personal_trainer.model.Aluno;
 import br.edu.ufape.personal_trainer.model.AvaliacaoFisica;
 import br.edu.ufape.personal_trainer.service.AlunoService;
@@ -36,6 +46,13 @@ public class AvaliacaoFisicaController {
         Aluno aluno = alunoService.buscarId(request.alunoId());
         AvaliacaoFisica av = avaliacaoFisicaService.criar(request, aluno);
         return ResponseEntity.status(201).body(new AvaliacaoFisicaResponse(av));
+    }
+    
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','PERSONAL')")
+    public ResponseEntity<AvaliacaoFisicaResponse> atualizar(@PathVariable Long id, @Valid @RequestBody AvaliacaoFisicaUpdateRequest request) {
+        AvaliacaoFisica av = avaliacaoFisicaService.atualizar(id, request);
+        return ResponseEntity.ok(new AvaliacaoFisicaResponse(av));
     }
 
     @DeleteMapping("/{id}")

@@ -22,10 +22,10 @@ public class DefaultAdminLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (usuarioRepository.findByEmail("admin@email.com").isEmpty()) {
+        if (usuarioRepository.findByEmail("admin@gmail.com").isEmpty()) {
             Admin admin = new Admin();
             admin.setNome("Administrador");
-            admin.setEmail("admin@email.com");
+            admin.setEmail("admin@gmail.com");
             admin.setSenha(passwordEncoder.encode("123456"));
             admin.setRole(Role.ADMIN);
             usuarioRepository.save(admin);

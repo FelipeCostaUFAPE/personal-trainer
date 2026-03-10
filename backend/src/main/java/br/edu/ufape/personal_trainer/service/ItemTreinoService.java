@@ -3,15 +3,17 @@ package br.edu.ufape.personal_trainer.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import br.edu.ufape.personal_trainer.config.SecurityUtil;
 import br.edu.ufape.personal_trainer.controller.advice.ResourceNotFoundException;
 import br.edu.ufape.personal_trainer.dto.ItemTreinoRequest;
+import br.edu.ufape.personal_trainer.dto.ItemTreinoUpdateRequest;
 import br.edu.ufape.personal_trainer.model.DiaTreino;
 import br.edu.ufape.personal_trainer.model.Exercicio;
 import br.edu.ufape.personal_trainer.model.ItemTreino;
 import br.edu.ufape.personal_trainer.repository.DiaTreinoRepository;
 import br.edu.ufape.personal_trainer.repository.ExercicioRepository;
 import br.edu.ufape.personal_trainer.repository.ItemTreinoRepository;
-import br.edu.ufape.personal_trainer.config.SecurityUtil;
 
 @Service
 public class ItemTreinoService {
@@ -50,6 +52,18 @@ public class ItemTreinoService {
         dia.getItens().add(itemTreino);
         diaTreinoRepository.save(dia);
         return itemTreino;
+    }
+    
+    @Transactional
+    public ItemTreino atualizar(Long id, ItemTreinoUpdateRequest request) {
+        SecurityUtil.requireAdminOrPersonal();
+        ItemTreino item = buscarId(id);
+        SecurityUtil.requirePersonalOfPlanoOrAdmin(item.getDiaTreino().getPlano(), "Você não tem permissão para editar este item");
+        if (request.series() != null) item.setSeries(request.series());
+        if (request.repeticoes() != null) item.setRepeticoes(request.repeticoes());
+        if (request.cargaKg() != null) item.setCargaKg(request.cargaKg());
+        if (request.descansoSegundos() != null) item.setDescansoSegundos(request.descansoSegundos());
+        return itemTreinoRepository.save(item);
     }
 
     @Transactional

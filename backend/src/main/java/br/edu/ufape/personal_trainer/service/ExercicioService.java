@@ -3,17 +3,20 @@ package br.edu.ufape.personal_trainer.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import br.edu.ufape.personal_trainer.config.SecurityUtil;
 import br.edu.ufape.personal_trainer.controller.advice.BusinessValidationException;
 import br.edu.ufape.personal_trainer.controller.advice.ResourceNotFoundException;
 import br.edu.ufape.personal_trainer.dto.ExercicioRequest;
+import br.edu.ufape.personal_trainer.dto.ExercicioUpdateRequest;
 import br.edu.ufape.personal_trainer.model.Exercicio;
 import br.edu.ufape.personal_trainer.model.GrupoMuscular;
 import br.edu.ufape.personal_trainer.repository.ExercicioRepository;
 import br.edu.ufape.personal_trainer.repository.GrupoMuscularRepository;
-import br.edu.ufape.personal_trainer.config.SecurityUtil;
 
 @Service
 public class ExercicioService {
@@ -50,6 +53,15 @@ public class ExercicioService {
         exercicio.setNome(request.nome());
         exercicio.setDescricao(request.descricao());
         exercicio.setGrupoMuscular(grupoMuscular);
+        return exercicioRepository.save(exercicio);
+    }
+    
+    @Transactional
+    public Exercicio atualizar(Long id, ExercicioUpdateRequest request) {
+        SecurityUtil.requireAdminOrPersonal();
+        Exercicio exercicio = buscarId(id);
+        if (request.nome() != null) exercicio.setNome(request.nome());
+        if (request.descricao() != null) exercicio.setDescricao(request.descricao());
         return exercicioRepository.save(exercicio);
     }
 

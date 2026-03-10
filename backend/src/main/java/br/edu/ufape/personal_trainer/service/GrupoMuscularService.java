@@ -3,14 +3,17 @@ package br.edu.ufape.personal_trainer.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import br.edu.ufape.personal_trainer.config.SecurityUtil;
 import br.edu.ufape.personal_trainer.controller.advice.BusinessValidationException;
 import br.edu.ufape.personal_trainer.controller.advice.ResourceNotFoundException;
+import br.edu.ufape.personal_trainer.dto.GrupoMuscularUpdateRequest;
 import br.edu.ufape.personal_trainer.model.GrupoMuscular;
 import br.edu.ufape.personal_trainer.repository.GrupoMuscularRepository;
-import br.edu.ufape.personal_trainer.config.SecurityUtil;
 
 @Service
 public class GrupoMuscularService {
@@ -45,6 +48,20 @@ public class GrupoMuscularService {
             throw new BusinessValidationException(erros);
         }
         return grupoMuscularRepository.save(grupoMuscular);
+    }
+    
+    @Transactional
+    public GrupoMuscular atualizar(Long id, GrupoMuscularUpdateRequest request) {
+        SecurityUtil.requireAdminOrPersonal();
+        GrupoMuscular grupo = buscarId(id);
+        if (request.nome() != null) {
+            if (grupoMuscularRepository.findByNome(request.nome()).isPresent() && !grupo.getNome().equals(request.nome())) {
+                throw new BusinessValidationException(Map.of("nome", "Nome do grupo muscular já existe"));
+            }
+            grupo.setNome(request.nome());
+        }
+        if (request.descricao() != null) grupo.setDescricao(request.descricao());
+        return grupoMuscularRepository.save(grupo);
     }
 
     @Transactional
