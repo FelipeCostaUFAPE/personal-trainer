@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import br.edu.ufape.personal_trainer.controller.advice.ResourceNotFoundException;
 import br.edu.ufape.personal_trainer.dto.FaturaRequest;
 import br.edu.ufape.personal_trainer.dto.FaturaResponse;
+import br.edu.ufape.personal_trainer.dto.FaturaUpdateRequest;
 import br.edu.ufape.personal_trainer.model.Aluno;
 import br.edu.ufape.personal_trainer.model.Fatura;
 import br.edu.ufape.personal_trainer.model.Personal;
@@ -49,6 +50,13 @@ public class FaturaController {
     public ResponseEntity<FaturaResponse> criar(@Valid @RequestBody FaturaRequest request) {
         Fatura fatura = faturaService.criar(request);
         return ResponseEntity.status(201).body(new FaturaResponse(fatura));
+    }
+    
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','PERSONAL')")
+    public ResponseEntity<FaturaResponse> atualizar(@PathVariable Long id, @Valid @RequestBody FaturaUpdateRequest request) {
+        Fatura fatura = faturaService.atualizar(id, request);
+        return ResponseEntity.ok(new FaturaResponse(fatura));
     }
 
     @DeleteMapping("/{id}")

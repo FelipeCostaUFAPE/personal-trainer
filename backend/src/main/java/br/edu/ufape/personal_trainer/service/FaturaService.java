@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import br.edu.ufape.personal_trainer.controller.advice.ResourceNotFoundException;
 import br.edu.ufape.personal_trainer.dto.FaturaRequest;
+import br.edu.ufape.personal_trainer.dto.FaturaUpdateRequest;
 import br.edu.ufape.personal_trainer.enums.StatusFatura;
 import br.edu.ufape.personal_trainer.model.Aluno;
 import br.edu.ufape.personal_trainer.model.Fatura;
@@ -64,6 +65,28 @@ public class FaturaService {
             throw new ResourceNotFoundException("Não existe fatura com ID: " + id);
         }
         faturaRepository.deleteById(id);
+    }
+    
+    @Transactional
+    public Fatura atualizar(Long id, FaturaUpdateRequest request) {
+        SecurityUtil.requireAuthenticated();
+        Fatura fatura = buscarId(id);
+        SecurityUtil.requireAdminOrPersonal();
+        SecurityUtil.requirePersonalOfAlunoOrAdmin(fatura.getAluno(), "Você não tem permissão para editar esta fatura");
+
+        if (fatura.getStatus() != StatusFatura.PENDENTE) {
+            throw new IllegalStateException("Só é possível editar faturas que estão no status PENDENTE");
+        }
+
+        if (request.valor() != null) {
+            fatura.setValor(request.valor());
+        }
+        if (request.dataVencimento() != null) {
+            fatura.setDataVencimento(request.dataVencimento());
+            verificarVencimento(fatura);
+        }
+
+        return faturaRepository.save(fatura);
     }
 
     @Transactional(readOnly = true)

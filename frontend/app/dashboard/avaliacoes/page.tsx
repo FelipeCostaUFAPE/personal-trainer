@@ -24,9 +24,20 @@ export default function AvaliacoesPage() {
   const [carregando, setCarregando] = useState(true);
 
   // Modal nova avaliação
-  const [modalAberto, setModalAberto] = useState(false);
-  const [salvando, setSalvando] = useState(false);
+  const [modalNovaAberto, setModalNovaAberto] = useState(false);
+  const [salvandoNova, setSalvandoNova] = useState(false);
 
+  // Modal editar avaliação
+  const [modalEditarAberto, setModalEditarAberto] = useState(false);
+  const [avaliacaoEditandoId, setAvaliacaoEditandoId] = useState<number | null>(null);
+  const [dataAvaliacaoEdit, setDataAvaliacaoEdit] = useState("");
+  const [pesoKgEdit, setPesoKgEdit] = useState("");
+  const [alturaCmEdit, setAlturaCmEdit] = useState("");
+  const [percentualGorduraEdit, setPercentualGorduraEdit] = useState("");
+  const [observacoesEdit, setObservacoesEdit] = useState("");
+  const [salvandoEditar, setSalvandoEditar] = useState(false);
+
+  // Campos nova avaliação
   const [alunoSelecionadoId, setAlunoSelecionadoId] = useState("");
   const [dataAvaliacao, setDataAvaliacao] = useState("");
   const [pesoKg, setPesoKg] = useState("");
@@ -96,7 +107,7 @@ export default function AvaliacoesPage() {
 
   const handleCriarAvaliacao = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSalvando(true);
+    setSalvandoNova(true);
 
     try {
       const token = document.cookie.split("; ").find(row => row.startsWith("token="))?.split("=")[1]?.trim();
@@ -124,7 +135,7 @@ export default function AvaliacoesPage() {
       });
 
       if (resposta.ok) {
-        setModalAberto(false);
+        setModalNovaAberto(false);
         setAlunoSelecionadoId("");
         setDataAvaliacao("");
         setPesoKg("");
@@ -140,7 +151,66 @@ export default function AvaliacoesPage() {
       console.error(error);
       alert("Erro de conexão.");
     } finally {
-      setSalvando(false);
+      setSalvandoNova(false);
+    }
+  };
+
+  const abrirModalEditar = (av: Avaliacao) => {
+    setAvaliacaoEditandoId(av.avaliacaoId);
+    setDataAvaliacaoEdit(av.dataAvaliacao.split("T")[0] || "");
+    setPesoKgEdit(av.pesoKg.toString());
+    setAlturaCmEdit(av.alturaCm.toString());
+    setPercentualGorduraEdit(av.percentualGordura.toString());
+    setObservacoesEdit(av.observacoes || "");
+    setModalEditarAberto(true);
+  };
+
+  const handleEditarAvaliacao = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSalvandoEditar(true);
+
+    try {
+      const token = document.cookie.split("; ").find(row => row.startsWith("token="))?.split("=")[1]?.trim();
+
+      const formatarData = (data: string) => {
+        if (!data) return "";
+        const [ano, mes, dia] = data.split("-");
+        return `${dia}/${mes}/${ano}`;
+      };
+
+      const resposta = await fetch(`http://localhost:8080/api/avaliacoes/${avaliacaoEditandoId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          dataAvaliacao: formatarData(dataAvaliacaoEdit),
+          pesoKg: Number(pesoKgEdit),
+          alturaCm: Number(alturaCmEdit),
+          percentualGordura: Number(percentualGorduraEdit),
+          observacoes: observacoesEdit,
+        }),
+      });
+
+      if (resposta.ok) {
+        setModalEditarAberto(false);
+        setAvaliacaoEditandoId(null);
+        setDataAvaliacaoEdit("");
+        setPesoKgEdit("");
+        setAlturaCmEdit("");
+        setPercentualGorduraEdit("");
+        setObservacoesEdit("");
+        buscarAvaliacoes();
+      } else {
+        const erro = await resposta.json();
+        alert(`Erro ao editar: ${erro.message || JSON.stringify(erro)}`);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Erro de conexão.");
+    } finally {
+      setSalvandoEditar(false);
     }
   };
 
@@ -186,7 +256,7 @@ export default function AvaliacoesPage() {
           <p className="text-zinc-400 mt-1">Registre e acompanhe a evolução física dos seus alunos.</p>
         </div>
         <button
-          onClick={() => setModalAberto(true)}
+          onClick={() => setModalNovaAberto(true)}
           className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-lg font-medium transition-colors shadow-lg shadow-emerald-900/20"
         >
           + Nova Avaliação
@@ -231,7 +301,13 @@ export default function AvaliacoesPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">{av.observacoes || "-"}</td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-6 py-4 text-right flex gap-2 justify-end">
+                      <button
+                        onClick={() => abrirModalEditar(av)}
+                        className="text-emerald-500 hover:text-emerald-400 text-xs font-medium bg-emerald-500/10 hover:bg-emerald-500/20 px-3 py-1.5 rounded transition-colors"
+                      >
+                        Editar
+                      </button>
                       <button
                         onClick={() => handleDeletarAvaliacao(av.avaliacaoId)}
                         className="text-red-500 hover:text-red-400 text-xs font-medium bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded transition-colors"
@@ -248,18 +324,19 @@ export default function AvaliacoesPage() {
       )}
 
       {/* Modal Nova Avaliação */}
-      {modalAberto && (
+      {modalNovaAberto && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
           <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-2xl w-full max-w-md shadow-2xl">
             <h2 className="text-2xl font-bold text-zinc-100 mb-6">Nova Avaliação Física</h2>
             <form onSubmit={handleCriarAvaliacao} className="space-y-4">
+              {/* ... campos do modal de criação (mantidos iguais) ... */}
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">Aluno</label>
                 <select
                   value={alunoSelecionadoId}
                   onChange={(e) => setAlunoSelecionadoId(e.target.value)}
                   required
-                  className="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                  className="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100"
                 >
                   <option value="" disabled>Selecione o aluno...</option>
                   {alunos.map((aluno) => (
@@ -277,6 +354,90 @@ export default function AvaliacoesPage() {
                   value={dataAvaliacao}
                   onChange={(e) => setDataAvaliacao(e.target.value)}
                   required
+                  className="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">Peso (kg)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={pesoKg}
+                    onChange={(e) => setPesoKg(e.target.value)}
+                    required
+                    className="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">Altura (cm)</label>
+                  <input
+                    type="number"
+                    value={alturaCm}
+                    onChange={(e) => setAlturaCm(e.target.value)}
+                    required
+                    className="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">% de Gordura</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={percentualGordura}
+                  onChange={(e) => setPercentualGordura(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">Observações</label>
+                <textarea
+                  value={observacoes}
+                  onChange={(e) => setObservacoes(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 h-24"
+                  placeholder="Detalhes adicionais..."
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setModalNovaAberto(false)}
+                  className="px-4 py-2.5 text-zinc-400 hover:text-zinc-100 font-medium"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={salvandoNova}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-lg font-medium shadow-lg disabled:opacity-50"
+                >
+                  {salvandoNova ? "Salvando..." : "Registrar Avaliação"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Editar Avaliação */}
+      {modalEditarAberto && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-2xl w-full max-w-md shadow-2xl">
+            <h2 className="text-2xl font-bold text-zinc-100 mb-6">Editar Avaliação Física</h2>
+            <form onSubmit={handleEditarAvaliacao} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">Data da Avaliação</label>
+                <input
+                  type="date"
+                  value={dataAvaliacaoEdit}
+                  onChange={(e) => setDataAvaliacaoEdit(e.target.value)}
+                  required
                   className="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                 />
               </div>
@@ -287,9 +448,8 @@ export default function AvaliacoesPage() {
                   <input
                     type="number"
                     step="0.1"
-                    min="0"
-                    value={pesoKg}
-                    onChange={(e) => setPesoKg(e.target.value)}
+                    value={pesoKgEdit}
+                    onChange={(e) => setPesoKgEdit(e.target.value)}
                     required
                     className="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   />
@@ -298,9 +458,8 @@ export default function AvaliacoesPage() {
                   <label className="block text-sm font-medium text-zinc-300 mb-2">Altura (cm)</label>
                   <input
                     type="number"
-                    min="0"
-                    value={alturaCm}
-                    onChange={(e) => setAlturaCm(e.target.value)}
+                    value={alturaCmEdit}
+                    onChange={(e) => setAlturaCmEdit(e.target.value)}
                     required
                     className="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                   />
@@ -312,9 +471,8 @@ export default function AvaliacoesPage() {
                 <input
                   type="number"
                   step="0.1"
-                  min="0"
-                  value={percentualGordura}
-                  onChange={(e) => setPercentualGordura(e.target.value)}
+                  value={percentualGorduraEdit}
+                  onChange={(e) => setPercentualGorduraEdit(e.target.value)}
                   required
                   className="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
                 />
@@ -323,9 +481,9 @@ export default function AvaliacoesPage() {
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">Observações</label>
                 <textarea
-                  value={observacoes}
-                  onChange={(e) => setObservacoes(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 h-24 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                  value={observacoesEdit}
+                  onChange={(e) => setObservacoesEdit(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg bg-zinc-950 border border-zinc-800 text-zinc-100 h-24"
                   placeholder="Detalhes adicionais..."
                 />
               </div>
@@ -333,17 +491,17 @@ export default function AvaliacoesPage() {
               <div className="flex justify-end gap-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => setModalAberto(false)}
+                  onClick={() => setModalEditarAberto(false)}
                   className="px-4 py-2.5 text-zinc-400 hover:text-zinc-100 font-medium"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  disabled={salvando}
+                  disabled={salvandoEditar}
                   className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-lg font-medium shadow-lg disabled:opacity-50"
                 >
-                  {salvando ? "Salvando..." : "Registrar Avaliação"}
+                  {salvandoEditar ? "Salvando..." : "Salvar Alterações"}
                 </button>
               </div>
             </form>
